@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:grwm_flutter_ai/image_segmentation.dart';
+import 'package:grwm_flutter_ai/main_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,6 +33,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  late MainBloC bloC;
   File? pickedFile;
   final ImagePicker _picker = ImagePicker();
   void onPickImage() async {
@@ -39,42 +41,61 @@ class _MyHomePageState extends State<MyHomePage> {
     final File file = File(xFile!.path);
     pickedFile = file;
     setState(() {});
-    imageSegmentation(pickedFile!);
+    bloC.segmentImage(pickedFile!);
+    bloC.poseDetection(pickedFile!);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              StreamBuilder<CustomPainter>(
-                  stream: customPaintStreamController.stream,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return CustomPaint(
-                        painter: snapshot.data!,
-                        child: Container(
-                          child: Image.file(
-                            pickedFile!,
-                            opacity: const AlwaysStoppedAnimation(.5),
-                          ),
-                        ),
-                      );
-                    }
-                    return const CircularProgressIndicator();
-                  }),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: onPickImage,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
-    );
+    return Provider(
+        create: (context) => MainBloC(),
+        dispose: (context, bloc) => bloc.dispose,
+        builder: (context, _) {
+          bloC = context.read<MainBloC>();
+          return Scaffold(
+            body: SingleChildScrollView(
+              child: Center(
+                child: Stack(
+                  children: <Widget>[
+                    StreamBuilder<CustomPainter>(
+                        stream: bloC.imageSegmentStream,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return CustomPaint(
+                              painter: snapshot.data!,
+                              child: Image.file(
+                                pickedFile!,
+                                opacity: const AlwaysStoppedAnimation(.5),
+                              ),
+                            );
+                          }
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }),
+                    StreamBuilder<CustomPainter>(
+                        stream: bloC.poseDetectionStream,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return CustomPaint(
+                              painter: snapshot.data!,
+                              child: Image.file(
+                                pickedFile!,
+                                opacity: const AlwaysStoppedAnimation(.5),
+                              ),
+                            );
+                          }
+                          return const CircularProgressIndicator();
+                        }),
+                  ],
+                ),
+              ),
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: onPickImage,
+              tooltip: 'Increment',
+              child: const Icon(Icons.add),
+            ),
+          );
+        });
   }
 }
