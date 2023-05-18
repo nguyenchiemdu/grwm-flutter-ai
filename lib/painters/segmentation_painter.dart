@@ -28,8 +28,12 @@ class SegmentationPainter extends CustomPainter {
       for (int x = 0; x < width; x++) {
         final int tx = transformX(x.toDouble(), size).round();
         final int ty = transformY(y.toDouble(), size).round();
-        final double opacity = confidences[(y * width) + x] * 0.25;
-        paint.color = color.withOpacity(opacity);
+        //final double opacity = confidences[(y * width) + x] * 0.25;
+        if (confidences[(y * width) + x] > 0.7) {
+           paint.color = color.withOpacity(1);
+        } else {
+           paint.color = color.withOpacity(0);
+        }
         if (rotation == InputImageRotation.rotation90deg) {
           canvas.drawCircle(
               Offset(
@@ -47,6 +51,9 @@ class SegmentationPainter extends CustomPainter {
               1,
               paint);
         }
+
+        
+        
       }
     }
   }
