@@ -28,10 +28,25 @@ class SegmentationPainter extends CustomPainter {
       for (int x = 0; x < width; x++) {
         final int tx = transformX(x.toDouble(), size).round();
         final int ty = transformY(y.toDouble(), size).round();
-
         final double opacity = confidences[(y * width) + x] * 0.25;
         paint.color = color.withOpacity(opacity);
-        canvas.drawCircle(Offset(tx.toDouble(), ty.toDouble()), 1, paint);
+        if (rotation == InputImageRotation.rotation90deg) {
+          canvas.drawCircle(
+              Offset(
+                ty.toDouble(),
+                tx.toDouble(),
+              ),
+              1,
+              paint);
+        } else {
+          canvas.drawCircle(
+              Offset(
+                tx.toDouble(),
+                ty.toDouble(),
+              ),
+              1,
+              paint);
+        }
       }
     }
   }
@@ -40,8 +55,8 @@ class SegmentationPainter extends CustomPainter {
     switch (rotation) {
       case InputImageRotation.rotation90deg:
         return x * size.width / absoluteImageSize.height;
-      case InputImageRotation.rotation270deg:
-        return size.width - x * size.width / absoluteImageSize.height;
+      // case InputImageRotation.rotation270deg:
+      //   return size.width - x * size.width / absoluteImageSize.height;
       default:
         return x * size.width / absoluteImageSize.width;
     }
@@ -50,8 +65,9 @@ class SegmentationPainter extends CustomPainter {
   double transformY(double y, Size size) {
     switch (rotation) {
       case InputImageRotation.rotation90deg:
-      case InputImageRotation.rotation270deg:
-        return y * size.height / absoluteImageSize.width;
+        return 3 / 4 * size.height - y * size.height / absoluteImageSize.width;
+      // case InputImageRotation.rotation270deg:
+      //   return y * size.height / absoluteImageSize.width;
       default:
         return y * size.height / absoluteImageSize.height;
     }

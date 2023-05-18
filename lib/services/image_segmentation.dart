@@ -21,7 +21,9 @@ class ImageSegmentation {
     final painter = SegmentationPainter(
       mask!,
       Size(size.width.toDouble(), size.height.toDouble()),
-      InputImageRotation.rotation0deg,
+      size.needRotate
+          ? InputImageRotation.rotation90deg
+          : InputImageRotation.rotation0deg,
     );
 
     segmenter.close();
