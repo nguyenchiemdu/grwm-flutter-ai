@@ -29,10 +29,12 @@ class PosePainter extends CustomPainter {
 
     for (final pose in poses) {
       pose.landmarks.forEach((_, landmark) {
+        final tx = translateX(landmark.x, rotation, size, absoluteImageSize);
+        final ty = translateY(landmark.y, rotation, size, absoluteImageSize);
         canvas.drawCircle(
-            Offset(
-              translateX(landmark.x, rotation, size, absoluteImageSize),
-              translateY(landmark.y, rotation, size, absoluteImageSize),
+            getOffset(
+              tx,
+              ty,
             ),
             1,
             paint);
@@ -42,12 +44,13 @@ class PosePainter extends CustomPainter {
           PoseLandmarkType type1, PoseLandmarkType type2, Paint paintType) {
         final PoseLandmark joint1 = pose.landmarks[type1]!;
         final PoseLandmark joint2 = pose.landmarks[type2]!;
-        canvas.drawLine(
-            Offset(translateX(joint1.x, rotation, size, absoluteImageSize),
-                translateY(joint1.y, rotation, size, absoluteImageSize)),
-            Offset(translateX(joint2.x, rotation, size, absoluteImageSize),
-                translateY(joint2.y, rotation, size, absoluteImageSize)),
-            paintType);
+        final tx = getOffset(
+            translateX(joint1.x, rotation, size, absoluteImageSize),
+            translateY(joint1.y, rotation, size, absoluteImageSize));
+        final ty = getOffset(
+            translateX(joint2.x, rotation, size, absoluteImageSize),
+            translateY(joint2.y, rotation, size, absoluteImageSize));
+        canvas.drawLine(tx, ty, paintType);
       }
 
       //Draw arms
@@ -74,6 +77,14 @@ class PosePainter extends CustomPainter {
           PoseLandmarkType.rightHip, PoseLandmarkType.rightKnee, rightPaint);
       paintLine(
           PoseLandmarkType.rightKnee, PoseLandmarkType.rightAnkle, rightPaint);
+    }
+  }
+
+  Offset getOffset(double dx, double dy) {
+    if (rotation == InputImageRotation.rotation90deg) {
+      return Offset(dy, dx);
+    } else {
+      return Offset(dx, dy);
     }
   }
 

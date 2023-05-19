@@ -6,12 +6,9 @@ class SegmentationPainter extends CustomPainter {
   final Size absoluteImageSize;
   final Color color = Colors.red;
   final InputImageRotation rotation;
-
-  SegmentationPainter(
-    this.mask,
-    this.absoluteImageSize,
-    this.rotation,
-  );
+  final double confidenceRange;
+  SegmentationPainter(this.mask, this.absoluteImageSize, this.rotation,
+      {this.confidenceRange = 0.7});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -29,10 +26,10 @@ class SegmentationPainter extends CustomPainter {
         final int tx = transformX(x.toDouble(), size).round();
         final int ty = transformY(y.toDouble(), size).round();
         //final double opacity = confidences[(y * width) + x] * 0.25;
-        if (confidences[(y * width) + x] > 0.7) {
-           paint.color = color.withOpacity(1);
+        if (confidences[(y * width) + x] > confidenceRange) {
+          paint.color = color.withOpacity(1);
         } else {
-           paint.color = color.withOpacity(0);
+          paint.color = color.withOpacity(0);
         }
         if (rotation == InputImageRotation.rotation90deg) {
           canvas.drawCircle(
@@ -51,9 +48,6 @@ class SegmentationPainter extends CustomPainter {
               1,
               paint);
         }
-
-        
-        
       }
     }
   }

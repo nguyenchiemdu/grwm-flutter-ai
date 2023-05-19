@@ -9,7 +9,9 @@ double translateX(
     case InputImageRotation.rotation90deg:
       return x *
           size.width /
-          (Platform.isIOS ? absoluteImageSize.width : absoluteImageSize.height);
+          (Platform.isIOS && 1 > 1
+              ? absoluteImageSize.width
+              : absoluteImageSize.height);
     case InputImageRotation.rotation270deg:
       return size.width -
           x *
@@ -25,11 +27,14 @@ double translateX(
 double translateY(
     double y, InputImageRotation rotation, Size size, Size absoluteImageSize) {
   switch (rotation) {
-    case InputImageRotation.rotation90deg:
     case InputImageRotation.rotation270deg:
-      return y *
-          size.height /
-          (Platform.isIOS ? absoluteImageSize.height : absoluteImageSize.width);
+    case InputImageRotation.rotation90deg:
+      return 3 / 4 * size.height -
+          y *
+              size.height /
+              (Platform.isIOS && 1 > 1
+                  ? absoluteImageSize.height
+                  : absoluteImageSize.width);
     default:
       return y * size.height / absoluteImageSize.height;
   }

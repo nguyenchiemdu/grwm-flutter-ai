@@ -3,31 +3,21 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
-import 'package:grwm_flutter_ai/painters/segmentation_painter.dart';
-import 'package:image_size_getter/file_input.dart';
-import 'package:image_size_getter/image_size_getter.dart' hide Size;
+
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 
 class ImageSegmentation {
-  Future<SegmentationPainter> imageSegmentation(File file) async {
+  Future<SegmentationMask?> imageSegmentation(File file) async {
     final InputImage inputImage = InputImage.fromFile(file);
 
     final segmenter = SelfieSegmenter(
       mode: SegmenterMode.stream,
     );
     var mask = await segmenter.processImage(inputImage);
-    final size = ImageSizeGetter.getSize(FileInput(file));
-    final painter = SegmentationPainter(
-      mask!,
-      Size(size.width.toDouble(), size.height.toDouble()),
-      size.needRotate
-          ? InputImageRotation.rotation90deg
-          : InputImageRotation.rotation0deg,
-    );
-
     segmenter.close();
-    return painter;
+
+    return mask;
   }
 }
 
