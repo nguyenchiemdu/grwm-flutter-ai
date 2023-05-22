@@ -46,8 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final File file = File(xFile!.path);
     setState(() {});
     bloC.pickedImage = file;
-    bloC.segmentImage();
-    bloC.poseDetection(file);
+    bloC.detectBody();
   }
 
   @override

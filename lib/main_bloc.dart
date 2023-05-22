@@ -2,10 +2,14 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
+import 'package:grwm_flutter_ai/painters/pose_painter.dart';
+import 'package:grwm_flutter_ai/painters/section_painter.dart';
 import 'package:grwm_flutter_ai/services/image_segmentation.dart';
 import 'package:grwm_flutter_ai/services/pose_detection.dart';
 import 'package:grwm_flutter_ai/painters/segmentation_painter.dart';
+import 'package:grwm_flutter_ai/services/sections_detection.dart';
 import 'package:image_size_getter/file_input.dart';
 import 'package:image_size_getter/image_size_getter.dart' hide Size;
 import 'package:rxdart/subjects.dart';
@@ -25,25 +29,26 @@ class MainBloC {
       _poseDetectionPaintStreamController.stream;
   Stream<double> get confidenceStream => _confidenceStreamController.stream;
   SegmentationMask? mask;
+  late List<Pose> poses;
   late File pickedImage;
+  late SectionDetection _sectionDetection;
   MainBloC() {
     _confidenceStreamController.add(0.7);
   }
-  void segmentImage() async {
+  void detectBody() async {
+    await segmentImage();
+    await poseDetection();
+    sectionDetection();
+  }
+
+  Future segmentImage() async {
     mask = await _imageSegmentation.imageSegmentation(pickedImage);
     var painter = _drawPainter(mask!, pickedImage);
     _imageSegmentPaintStreamController.add(painter);
   }
 
-  // void onConfidenceChanged(double value) {
-  //   confidence = value;
-  // }
   void changeConfidenceRange(double amount) {
-    // double confidence = _confidenceStreamController.value;
     double newValue = amount;
-    // if (newValue > 1 || newValue < 0) {
-    //   return;
-    // }
     _confidenceStreamController.add(newValue);
     var painter = _drawPainter(mask!, pickedImage, confidence: newValue);
     _imageSegmentPaintStreamController.add(painter);
@@ -62,13 +67,36 @@ class MainBloC {
     return painter;
   }
 
-  void poseDetection(File image) async {
-    CustomPainter painter = await _poseDetection.imagePoseDetection(image);
+  Future poseDetection() async {
+    poses = await _poseDetection.imagePoseDetection(pickedImage);
+    final size = ImageSizeGetter.getSize(FileInput(pickedImage));
+    final painter = PosePainter(
+        poses,
+        Size(size.width.toDouble(), size.height.toDouble()),
+        size.needRotate
+            ? InputImageRotation.rotation90deg
+            : InputImageRotation.rotation0deg);
     _poseDetectionPaintStreamController.add(painter);
+  }
+
+  Future sectionDetection() async {
+    _sectionDetection = SectionDetection(mask: mask!, poses: poses);
+    var section = _sectionDetection.shoulderDetection();
+    final size = ImageSizeGetter.getSize(FileInput(pickedImage));
+    final SectionPainter sectionPainter = SectionPainter(
+        [section.start, section.end],
+        Size(size.width.toDouble(), size.height.toDouble()),
+        size.needRotate
+            ? InputImageRotation.rotation90deg
+            : InputImageRotation.rotation0deg);
+    _imageSegmentPaintStreamController.add(sectionPainter);
+    // print(section.start);
+    // print(section.end);
   }
 
   void dispose() {
     _imageSegmentPaintStreamController.close();
     _poseDetectionPaintStreamController.close();
+    _confidenceStreamController.close();
   }
 }
