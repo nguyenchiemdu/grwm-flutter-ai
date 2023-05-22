@@ -1,8 +1,13 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:grwm_flutter_ai/main_bloc.dart';
+import 'package:grwm_flutter_ai/widgets/change_confidence.dart';
+import 'package:grwm_flutter_ai/widgets/image_detection.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+
+import 'widgets/range_slider_widget.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,21 +39,19 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late MainBloC bloC;
-  File? pickedFile;
   final ImagePicker _picker = ImagePicker();
+
   void onPickImage() async {
     final xFile = await _picker.pickImage(source: ImageSource.gallery);
     final File file = File(xFile!.path);
-    pickedFile = file;
     setState(() {});
-    bloC.pickedImage = pickedFile!;
+    bloC.pickedImage = file;
     bloC.segmentImage();
-    bloC.poseDetection(pickedFile!);
+    bloC.poseDetection(file);
   }
 
   @override
   Widget build(BuildContext context) {
-    print('build');
     return Provider(
         create: (context) => MainBloC(),
         dispose: (context, bloc) => bloc.dispose,
@@ -58,61 +61,11 @@ class _MyHomePageState extends State<MyHomePage> {
             body: SafeArea(
               child: Center(
                 child: Column(
-                  children: [
-                    Flexible(
-                      child: Stack(
-                        children: <Widget>[
-                          StreamBuilder<CustomPainter>(
-                              stream: bloC.imageSegmentStream,
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData) {
-                                  return CustomPaint(
-                                    painter: snapshot.data!,
-                                    child: Image.file(
-                                      pickedFile!,
-                                      opacity: const AlwaysStoppedAnimation(.5),
-                                    ),
-                                  );
-                                }
-                                return const Center(
-                                    child: CircularProgressIndicator());
-                              }),
-                          StreamBuilder<CustomPainter>(
-                              stream: bloC.poseDetectionStream,
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData) {
-                                  return CustomPaint(
-                                    painter: snapshot.data!,
-                                    child: Image.file(
-                                      pickedFile!,
-                                      opacity: const AlwaysStoppedAnimation(.5),
-                                    ),
-                                  );
-                                }
-                                return const CircularProgressIndicator();
-                              }),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        ElevatedButton(
-                            onPressed: () {
-                              bloC.changeConfidenceRange();
-                            },
-                            child: const Text("Change confidence")),
-                        Expanded(
-                            child: TextField(
-                          keyboardType: TextInputType.number,
-                          onChanged: (value) {
-                            if (double.tryParse(value) != null) {
-                              bloC.onConfidenceChanged(double.parse(value));
-                            }
-                          },
-                        ))
-                      ],
-                    ),
-                    const SizedBox(
+                  children: const [
+                    ImageDetection(),
+                    ChangeConfidenceWidget(),
+                    RangeSliderWidget(),
+                    SizedBox(
                       height: 100,
                     )
                   ],

@@ -8,6 +8,7 @@ import 'package:grwm_flutter_ai/services/pose_detection.dart';
 import 'package:grwm_flutter_ai/painters/segmentation_painter.dart';
 import 'package:image_size_getter/file_input.dart';
 import 'package:image_size_getter/image_size_getter.dart' hide Size;
+import 'package:rxdart/subjects.dart';
 
 class MainBloC {
   final ImageSegmentation _imageSegmentation = ImageSegmentation();
@@ -16,29 +17,35 @@ class MainBloC {
       StreamController<CustomPainter>();
   final StreamController<CustomPainter> _poseDetectionPaintStreamController =
       StreamController<CustomPainter>();
+  final BehaviorSubject<double> _confidenceStreamController =
+      BehaviorSubject<double>();
   Stream<CustomPainter> get imageSegmentStream =>
       _imageSegmentPaintStreamController.stream;
   Stream<CustomPainter> get poseDetectionStream =>
       _poseDetectionPaintStreamController.stream;
-
+  Stream<double> get confidenceStream => _confidenceStreamController.stream;
   SegmentationMask? mask;
   late File pickedImage;
-  late double confidence;
+  MainBloC() {
+    _confidenceStreamController.add(0.7);
+  }
   void segmentImage() async {
     mask = await _imageSegmentation.imageSegmentation(pickedImage);
     var painter = _drawPainter(mask!, pickedImage);
     _imageSegmentPaintStreamController.add(painter);
   }
 
-  void onConfidenceChanged(double value) {
-    confidence = value;
-  }
-
-  void changeConfidenceRange() {
-    if (confidence > 1 || confidence < 0) {
-      confidence = 0;
-    }
-    var painter = _drawPainter(mask!, pickedImage, confidence: confidence);
+  // void onConfidenceChanged(double value) {
+  //   confidence = value;
+  // }
+  void changeConfidenceRange(double amount) {
+    // double confidence = _confidenceStreamController.value;
+    double newValue = amount;
+    // if (newValue > 1 || newValue < 0) {
+    //   return;
+    // }
+    _confidenceStreamController.add(newValue);
+    var painter = _drawPainter(mask!, pickedImage, confidence: newValue);
     _imageSegmentPaintStreamController.add(painter);
   }
 
