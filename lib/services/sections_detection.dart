@@ -25,20 +25,6 @@ class SectionDetection {
     return section;
   }
 
-  Section hipDetection() {
-    Section section;
-    Pose pose = poses.first;
-    PoseLandmark leftHip = pose.landmarks[PoseLandmarkType.leftHip]!;
-    PoseLandmark rightHip = pose.landmarks[PoseLandmarkType.rightHip]!;
-    Point left = Point(leftHip.x.toInt(), rightHip.y.toInt());
-    Point right = Point(rightHip.x.toInt(), rightHip.y.toInt());
-
-    final hipSlope = AlgebraHelper.findSlope(left, right);
-    section = AlgebraHelper.breadthPoint(hipSlope, left, AlgebraHelper.to2Darray(mask, mask.confidences));
-
-    return section;
-  }
-  
 }
 
 class Point {
