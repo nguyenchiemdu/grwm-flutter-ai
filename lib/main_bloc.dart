@@ -85,9 +85,10 @@ class MainBloC {
 
     var sectionShoulder = _sectionDetection.shoulderDetection();
     var sectionHip = _sectionDetection.hipDetection();
+    var sectionWaist = _sectionDetection.waistDetection();
     
     final SectionPainter sectionPainter = SectionPainter(
-        [sectionShoulder.start, sectionShoulder.end, sectionHip.start, sectionHip.end],
+        [sectionShoulder.start, sectionShoulder.end, sectionHip.start, sectionHip.end, sectionWaist.start, sectionWaist.end],
         Size(size.width.toDouble(), size.height.toDouble()),
         size.needRotate
             ? InputImageRotation.rotation90deg
