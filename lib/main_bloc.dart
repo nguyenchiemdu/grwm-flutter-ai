@@ -81,17 +81,18 @@ class MainBloC {
 
   Future sectionDetection() async {
     _sectionDetection = SectionDetection(mask: mask!, poses: poses);
-    var section = _sectionDetection.shoulderDetection();
     final size = ImageSizeGetter.getSize(FileInput(pickedImage));
+
+    var sectionShoulder = _sectionDetection.shoulderDetection();
+    var sectionHip = _sectionDetection.hipDetection();
+    
     final SectionPainter sectionPainter = SectionPainter(
-        [section.start, section.end],
+        [sectionShoulder.start, sectionShoulder.end, sectionHip.start, sectionHip.end],
         Size(size.width.toDouble(), size.height.toDouble()),
         size.needRotate
             ? InputImageRotation.rotation90deg
             : InputImageRotation.rotation0deg);
-    _imageSegmentPaintStreamController.add(sectionPainter);
-    // print(section.start);
-    // print(section.end);
+     _imageSegmentPaintStreamController.add(sectionPainter);
   }
 
   void dispose() {

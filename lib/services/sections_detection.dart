@@ -9,7 +9,7 @@ class SectionDetection {
   final double confidence;
   SectionDetection(
       {required this.mask, required this.poses, this.confidence = 0.7});
-
+  
   Section shoulderDetection() {
     Section section;
     Pose pose = poses.first;
@@ -21,7 +21,22 @@ class SectionDetection {
 
     final shoulderSlope = AlgebraHelper.findSlope(left, right);
     section = AlgebraHelper.breadthPoint(shoulderSlope, left, AlgebraHelper.to2Darray(mask, mask.confidences));
-    //section = Section(left, right);
+
+    return section;
+  }
+
+  Section hipDetection() {
+    Section section;
+    Pose pose = poses.first;
+    PoseLandmark leftHip = pose.landmarks[PoseLandmarkType.leftHip]!;
+    PoseLandmark rightHip = pose.landmarks[PoseLandmarkType.rightHip]!;
+
+    Point left = Point(leftHip.x.toInt(), leftHip.y.toInt());
+    Point right = Point(rightHip.x.toInt(), rightHip.y.toInt());
+
+    final hipSlope = AlgebraHelper.findSlope(left, right);
+    section = AlgebraHelper.breadthPoint(hipSlope, left, AlgebraHelper.to2Darray(mask, mask.confidences));
+
     return section;
   }
 
