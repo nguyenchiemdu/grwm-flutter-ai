@@ -11,11 +11,12 @@ class SectionPainter extends CustomPainter {
   final Size absoluteImageSize;
   final InputImageRotation rotation;
 
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 20.0
+      ..strokeWidth = 5.0
       ..color = Colors.purple;
 
     for (final point in points) {
@@ -31,6 +32,7 @@ class SectionPainter extends CustomPainter {
           1,
           paint);
     }
+
   }
 
   Offset getOffset(double dx, double dy) {

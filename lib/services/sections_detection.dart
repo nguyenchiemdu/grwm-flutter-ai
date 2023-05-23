@@ -1,6 +1,8 @@
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
 
+import '../commons/algebra_helper.dart';
+
 class SectionDetection {
   final SegmentationMask mask;
   final List<Pose> poses;
@@ -17,9 +19,26 @@ class SectionDetection {
     Point left = Point(leftShoulder.x.toInt(), leftShoulder.y.toInt());
     Point right = Point(rightShoulder.x.toInt(), rightShoulder.y.toInt());
 
-    section = Section(left, right);
+    final shoulderSlope = AlgebraHelper.findSlope(left, right);
+    section = AlgebraHelper.breadthPoint(shoulderSlope, left, AlgebraHelper.to2Darray(mask, mask.confidences));
+    //section = Section(left, right);
     return section;
   }
+
+  Section hipDetection() {
+    Section section;
+    Pose pose = poses.first;
+    PoseLandmark leftHip = pose.landmarks[PoseLandmarkType.leftHip]!;
+    PoseLandmark rightHip = pose.landmarks[PoseLandmarkType.rightHip]!;
+    Point left = Point(leftHip.x.toInt(), rightHip.y.toInt());
+    Point right = Point(rightHip.x.toInt(), rightHip.y.toInt());
+
+    final hipSlope = AlgebraHelper.findSlope(left, right);
+    section = AlgebraHelper.breadthPoint(hipSlope, left, AlgebraHelper.to2Darray(mask, mask.confidences));
+
+    return section;
+  }
+  
 }
 
 class Point {

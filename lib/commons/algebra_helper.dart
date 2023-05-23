@@ -1,7 +1,10 @@
+
 import 'dart:math' hide Point;
 import 'dart:math';
 
+import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
 import 'package:grwm_flutter_ai/services/sections_detection.dart';
+import 'package:matrix2d/matrix2d.dart';
 
 class AlgebraHelper {
   static Point findDiagonalIntersection(
@@ -92,7 +95,7 @@ class AlgebraHelper {
     return Point(newX.toInt(), newY.toInt());
   }
 
-  static Section breadthPoint(double slope, Point p, List<List<double>> image,
+  static Section breadthPoint(double slope, Point p, List<dynamic> image,
       {double confidence = 0.7}) {
     var listParams = linearEquation(slope, p);
     var A = listParams[0], B = listParams[1], C = listParams[2];
@@ -115,4 +118,14 @@ class AlgebraHelper {
     var x2 = b.x, y2 = b.y;
     return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * y2 - y1);
   }
+
+  static List<dynamic> to2Darray (SegmentationMask mask, List<double> confidences) {
+    var width = mask.width;
+    var height = mask.height;
+    
+    final newConfidences = confidences.reshape(height, width);
+    return newConfidences;
+  }
 }
+
+
