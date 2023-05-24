@@ -1,4 +1,5 @@
-import 'dart:math';
+import 'dart:math' hide log;
+import 'dart:developer';
 
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
@@ -56,22 +57,14 @@ class SectionDetection {
     Point leftH = Point(leftHip.x.toInt(), leftHip.y.toInt());
     Point rightH = Point(rightHip.x.toInt(), rightHip.y.toInt());
 
-    
     Point intersection = AlgebraHelper.findDiagonalIntersection(leftS, rightH, rightS, leftH);
-    // final waistSlope = AlgebraHelper.findSlope(leftH, rightH);
-    double shoulderSlope = AlgebraHelper.findSlope(leftS, rightS);
-    double hipSlope = AlgebraHelper.findSlope(leftH, rightH);
+    var hipSlope = AlgebraHelper.findSlope(leftH, rightH);
 
-    var shoulderAlpha = acos(sqrt(1 / (1 + shoulderSlope * shoulderSlope)));
-    var hipAlpha = acos(sqrt(1 / (1 + hipSlope * hipSlope))); 
-    var waistAlpha = (shoulderAlpha + hipAlpha) / 2; // average of two angles
-
-    final waistSlope = sqrt((1 / (cos(waistAlpha) * cos(waistAlpha))) - 1); // corresponding slope with the waist angle
-    section = AlgebraHelper.breadthPoint(waistSlope, intersection, AlgebraHelper.to2Darray(mask, mask.confidences));
-
+    final waistSlope = hipSlope;
+    section = AlgebraHelper.breadthPoint(waistSlope, intersection, AlgebraHelper.to2Darray(mask, mask.confidences));   
+    
     return section;
   }
-
 }
 
 class Point {
@@ -88,3 +81,5 @@ class Section {
   Point end;
   Section(this.start, this.end);
 }
+
+
