@@ -1,11 +1,7 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
-import 'package:matrix2d/matrix2d.dart';
 
 import '../commons/algebra_helper.dart';
-
 
 class SegmentationPainter extends CustomPainter {
   final SegmentationMask mask;
@@ -23,7 +19,7 @@ class SegmentationPainter extends CustomPainter {
 
     final width = mask.width;
     final height = mask.height;
-    final confidences = AlgebraHelper.to2Darray(mask, mask.confidences);
+    final confidences = AlgebraHelper.to2Darray(mask);
     // log(mask.confidences.shape.toString());
     // log(confidences.shape.toString());
 
@@ -34,13 +30,13 @@ class SegmentationPainter extends CustomPainter {
         final int tx = transformX(x.toDouble(), size).round();
         final int ty = transformY(y.toDouble(), size).round();
         //final double opacity = confidences[(y * width) + x] * 0.25;
-        
+
         // if (confidences[(y * width) + x] > confidenceRange) {
         //   paint.color = color.withOpacity(1);
         // } else {
         //   paint.color = color.withOpacity(0);
         // }
-        
+
         if (confidences[y][x] > confidenceRange) {
           paint.color = color.withOpacity(1);
         } else {

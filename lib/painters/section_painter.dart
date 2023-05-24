@@ -11,7 +11,6 @@ class SectionPainter extends CustomPainter {
   final Size absoluteImageSize;
   final InputImageRotation rotation;
 
-
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
@@ -32,7 +31,6 @@ class SectionPainter extends CustomPainter {
           1,
           paint);
     }
-
   }
 
   Offset getOffset(double dx, double dy) {

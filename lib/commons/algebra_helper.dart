@@ -1,4 +1,3 @@
-
 import 'dart:math' hide Point;
 import 'dart:math';
 
@@ -52,6 +51,13 @@ class AlgebraHelper {
     var dx = d * cosAlpha;
     var newX = x - dx;
     var newY = -(C + A * newX) / B;
+    // Prevent point from stand still
+    if (newX.toInt() == x) {
+      newX++;
+    }
+    if (newY.toInt() == point.y) {
+      newY++;
+    }
     return Point(newX.toInt(), newY.toInt());
   }
 
@@ -62,6 +68,13 @@ class AlgebraHelper {
     var dx = d * cosAlpha;
     var newX = x + dx;
     var newY = -(C + A * newX) / B;
+    // Prevent point from stand still
+    if (newX.toInt() == x) {
+      newX++;
+    }
+    if (newY.toInt() == point.y) {
+      newY++;
+    }
     return Point(newX.toInt(), newY.toInt());
   }
 
@@ -96,7 +109,7 @@ class AlgebraHelper {
   }
 
   static Section breadthPoint(double slope, Point p, List<dynamic> image,
-      {double confidence = 0.7}) {
+      {double confidence = 0.5}) {
     var listParams = linearEquation(slope, p);
     var A = listParams[0], B = listParams[1], C = listParams[2];
     var point = p;
@@ -119,13 +132,10 @@ class AlgebraHelper {
     return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * y2 - y1);
   }
 
-  static List<dynamic> to2Darray (SegmentationMask mask, List<double> confidences) {
+  static List<dynamic> to2Darray(SegmentationMask mask) {
     var width = mask.width;
     var height = mask.height;
-    
-    final newConfidences = confidences.reshape(height, width);
+    final newConfidences = mask.confidences.reshape(height, width);
     return newConfidences;
   }
 }
-
-
