@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:grwm_flutter_ai/main_bloc.dart';
 import 'package:grwm_flutter_ai/widgets/change_confidence.dart';
 import 'package:grwm_flutter_ai/widgets/image_detection.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:screenshot/screenshot.dart';
 
 import 'widgets/range_slider_widget.dart';
 
@@ -40,7 +42,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   late MainBloC bloC;
   final ImagePicker _picker = ImagePicker();
-
+  final ScreenshotController _screenshotController = ScreenshotController();
   void onPickImage() async {
     final xFile = await _picker.pickImage(source: ImageSource.gallery);
     final File file = File(xFile!.path);
@@ -60,12 +62,25 @@ class _MyHomePageState extends State<MyHomePage> {
             body: SafeArea(
               child: Center(
                 child: Column(
-                  children: const [
-                    ImageDetection(),
-                    ChangeConfidenceWidget(),
-                    RangeSliderWidget(),
+                  children: [
+                    Expanded(
+                      child: ImageDetection(
+                        screenshotController: _screenshotController,
+                      ),
+                    ),
+                    const ChangeConfidenceWidget(),
+                    const RangeSliderWidget(),
                     SizedBox(
                       height: 100,
+                      child: ElevatedButton(
+                        child: const Text('Save'),
+                        onPressed: () {
+                          _screenshotController.capture().then((data) async {
+                            await ImageGallerySaver.saveImage(data!,
+                                quality: 60, name: "hello");
+                          });
+                        },
+                      ),
                     )
                   ],
                 ),

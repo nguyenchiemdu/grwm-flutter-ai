@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:grwm_flutter_ai/main_bloc.dart';
 
 import 'package:provider/provider.dart';
+import 'package:screenshot/screenshot.dart';
 
 class ImageDetection extends StatefulWidget {
-  const ImageDetection({super.key});
-
+  const ImageDetection({required this.screenshotController, super.key});
+  final ScreenshotController screenshotController;
   @override
   State<ImageDetection> createState() => _ImageDetectionState();
 }
@@ -21,7 +22,8 @@ class _ImageDetectionState extends State<ImageDetection> {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
+    return Screenshot(
+      controller: widget.screenshotController,
       child: Stack(
         children: <Widget>[
           StreamBuilder<CustomPainter>(
@@ -32,7 +34,7 @@ class _ImageDetectionState extends State<ImageDetection> {
                     painter: snapshot.data!,
                     child: Image.file(
                       bloC.pickedImage,
-                      opacity: const AlwaysStoppedAnimation(.5),
+                      opacity: const AlwaysStoppedAnimation(0.0),
                     ),
                   );
                 }
@@ -46,7 +48,21 @@ class _ImageDetectionState extends State<ImageDetection> {
                     painter: snapshot.data!,
                     child: Image.file(
                       bloC.pickedImage,
-                      opacity: const AlwaysStoppedAnimation(.5),
+                      opacity: const AlwaysStoppedAnimation(0.5),
+                    ),
+                  );
+                }
+                return const Text("Loading");
+              }),
+          StreamBuilder<CustomPainter>(
+              stream: bloC.sectionDetectionStream,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return CustomPaint(
+                    painter: snapshot.data!,
+                    child: Image.file(
+                      bloC.pickedImage,
+                      opacity: const AlwaysStoppedAnimation(0.5),
                     ),
                   );
                 }

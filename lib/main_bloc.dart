@@ -21,12 +21,16 @@ class MainBloC {
       StreamController<CustomPainter>();
   final StreamController<CustomPainter> _poseDetectionPaintStreamController =
       StreamController<CustomPainter>();
+  final StreamController<CustomPainter> _sectionDetectionPaintStreamController =
+      StreamController<CustomPainter>();
   final BehaviorSubject<double> _confidenceStreamController =
       BehaviorSubject<double>();
   Stream<CustomPainter> get imageSegmentStream =>
       _imageSegmentPaintStreamController.stream;
   Stream<CustomPainter> get poseDetectionStream =>
       _poseDetectionPaintStreamController.stream;
+  Stream<CustomPainter> get sectionDetectionStream =>
+      _sectionDetectionPaintStreamController.stream;
   Stream<double> get confidenceStream => _confidenceStreamController.stream;
   SegmentationMask? mask;
   late List<Pose> poses;
@@ -90,18 +94,19 @@ class MainBloC {
           sectionShoulder.start,
           sectionShoulder.end,
           sectionHip.start,
-          sectionHip.end
+          sectionHip.end,
         ],
         Size(size.width.toDouble(), size.height.toDouble()),
         size.needRotate
             ? InputImageRotation.rotation90deg
             : InputImageRotation.rotation0deg);
-    _imageSegmentPaintStreamController.add(sectionPainter);
+    _sectionDetectionPaintStreamController.add(sectionPainter);
   }
 
   void dispose() {
     _imageSegmentPaintStreamController.close();
     _poseDetectionPaintStreamController.close();
     _confidenceStreamController.close();
+    _sectionDetectionPaintStreamController.close();
   }
 }
