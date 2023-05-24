@@ -41,6 +41,32 @@ class SectionDetection {
 
     return section;
   }
+
+  Section waistDetection() {
+    Section section;
+    Pose pose = poses.first;
+
+    PoseLandmark leftShoulder = pose.landmarks[PoseLandmarkType.leftShoulder]!;
+    PoseLandmark rightShoulder =
+        pose.landmarks[PoseLandmarkType.rightShoulder]!;
+    PoseLandmark leftHip = pose.landmarks[PoseLandmarkType.leftHip]!;
+    PoseLandmark rightHip = pose.landmarks[PoseLandmarkType.rightHip]!;
+
+    Point leftS = Point(leftShoulder.x.toInt(), leftShoulder.y.toInt());
+    Point rightS = Point(rightShoulder.x.toInt(), rightShoulder.y.toInt());
+    Point leftH = Point(leftHip.x.toInt(), leftHip.y.toInt());
+    Point rightH = Point(rightHip.x.toInt(), rightHip.y.toInt());
+
+    Point intersection =
+        AlgebraHelper.findDiagonalIntersection(leftS, rightH, rightS, leftH);
+    var hipSlope = AlgebraHelper.findSlope(leftH, rightH);
+
+    final waistSlope = hipSlope;
+    section = AlgebraHelper.breadthPoint(
+        waistSlope, intersection, AlgebraHelper.to2Darray(mask));
+
+    return section;
+  }
 }
 
 class Point {

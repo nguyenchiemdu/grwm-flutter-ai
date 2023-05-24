@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
@@ -88,6 +87,7 @@ class MainBloC {
     final size = ImageSizeGetter.getSize(FileInput(pickedImage));
     var sectionShoulder = _sectionDetection.shoulderDetection();
     var sectionHip = _sectionDetection.hipDetection();
+    var sectionWaist = _sectionDetection.waistDetection();
 
     final SectionPainter sectionPainter = SectionPainter(
         [
@@ -95,6 +95,8 @@ class MainBloC {
           sectionShoulder.end,
           sectionHip.start,
           sectionHip.end,
+          sectionWaist.start,
+          sectionWaist.end
         ],
         Size(size.width.toDouble(), size.height.toDouble()),
         size.needRotate
