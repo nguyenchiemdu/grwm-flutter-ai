@@ -109,7 +109,7 @@ class AlgebraHelper {
   }
 
   static Section breadthPoint(double slope, Point p, List<dynamic> image,
-      {double confidence = 0.7}) {
+      {required double confidence}) {
     var listParams = linearEquation(slope, p);
     var A = listParams[0], B = listParams[1], C = listParams[2];
     var point = p;

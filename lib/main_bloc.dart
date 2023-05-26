@@ -24,6 +24,8 @@ class MainBloC {
       StreamController<CustomPainter>();
   final BehaviorSubject<double> _confidenceStreamController =
       BehaviorSubject<double>();
+  final BehaviorSubject<bool> _devModeStreamController =
+      BehaviorSubject<bool>();
   Stream<CustomPainter> get imageSegmentStream =>
       _imageSegmentPaintStreamController.stream;
   Stream<CustomPainter> get poseDetectionStream =>
@@ -31,12 +33,14 @@ class MainBloC {
   Stream<CustomPainter> get sectionDetectionStream =>
       _sectionDetectionPaintStreamController.stream;
   Stream<double> get confidenceStream => _confidenceStreamController.stream;
+  Stream<bool> get devModeStream => _devModeStreamController.stream;
   SegmentationMask? mask;
   late List<Pose> poses;
   late File pickedImage;
   late SectionDetection _sectionDetection;
   MainBloC() {
     _confidenceStreamController.add(0.7);
+    _devModeStreamController.add(false);
   }
   void detectBody() async {
     await segmentImage();
@@ -46,19 +50,27 @@ class MainBloC {
 
   Future segmentImage() async {
     mask = await _imageSegmentation.imageSegmentation(pickedImage);
-    var painter = _drawPainter(mask!, pickedImage);
+    double confidence = _confidenceStreamController.value;
+    var painter = _drawPainter(mask!, pickedImage, confidence: confidence);
     _imageSegmentPaintStreamController.add(painter);
   }
 
   void changeConfidenceRange(double amount) {
     double newValue = amount;
+    SegmentationPainter painter =
+        _drawPainter(mask!, pickedImage, confidence: newValue);
     _confidenceStreamController.add(newValue);
-    var painter = _drawPainter(mask!, pickedImage, confidence: newValue);
     _imageSegmentPaintStreamController.add(painter);
+    sectionDetection();
+  }
+
+  void changeDevMode() {
+    bool devMode = _devModeStreamController.value;
+    _devModeStreamController.add(!devMode);
   }
 
   SegmentationPainter _drawPainter(SegmentationMask mask, File image,
-      {double confidence = 0.7}) {
+      {required double confidence}) {
     final size = ImageSizeGetter.getSize(FileInput(image));
     final painter = SegmentationPainter(
         mask,
@@ -83,7 +95,10 @@ class MainBloC {
   }
 
   Future sectionDetection() async {
-    _sectionDetection = SectionDetection(mask: mask!, poses: poses);
+    _sectionDetection = SectionDetection(
+        mask: mask!,
+        poses: poses,
+        confidence: _confidenceStreamController.value);
     final size = ImageSizeGetter.getSize(FileInput(pickedImage));
     var sectionShoulder = _sectionDetection.shoulderDetection();
     var sectionHip = _sectionDetection.hipDetection();
@@ -110,5 +125,6 @@ class MainBloC {
     _poseDetectionPaintStreamController.close();
     _confidenceStreamController.close();
     _sectionDetectionPaintStreamController.close();
+    _devModeStreamController.close();
   }
 }

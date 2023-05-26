@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:grwm_flutter_ai/main_bloc.dart';
 import 'package:grwm_flutter_ai/widgets/change_confidence.dart';
 import 'package:grwm_flutter_ai/widgets/image_detection.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+// import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
@@ -71,14 +71,21 @@ class _MyHomePageState extends State<MyHomePage> {
                     const ChangeConfidenceWidget(),
                     const RangeSliderWidget(),
                     SizedBox(
-                      height: 100,
+                      height: 80,
                       child: ElevatedButton(
-                        child: const Text('Save'),
+                        child: StreamBuilder<bool>(
+                            stream: bloC.devModeStream,
+                            builder: (context, snapshot) {
+                              return Text(snapshot.data ?? false
+                                  ? 'Dev mode'
+                                  : 'Demo mode');
+                            }),
                         onPressed: () {
-                          _screenshotController.capture().then((data) async {
-                            await ImageGallerySaver.saveImage(data!,
-                                quality: 60, name: "hello");
-                          });
+                          // _screenshotController.capture().then((data) async {
+                          //   await ImageGallerySaver.saveImage(data!,
+                          //       quality: 60, name: "hello");
+                          // });
+                          bloC.changeDevMode();
                         },
                       ),
                     )

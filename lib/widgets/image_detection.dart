@@ -24,52 +24,65 @@ class _ImageDetectionState extends State<ImageDetection> {
   Widget build(BuildContext context) {
     return Screenshot(
       controller: widget.screenshotController,
-      child: Stack(
-        children: <Widget>[
-          StreamBuilder<CustomPainter>(
-              stream: bloC.imageSegmentStream,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return CustomPaint(
-                    painter: snapshot.data!,
-                    child: Image.file(
-                      bloC.pickedImage,
-                      opacity: const AlwaysStoppedAnimation(0.0),
-                    ),
-                  );
-                }
-                return const Text("Loading");
-              }),
-          StreamBuilder<CustomPainter>(
-              stream: bloC.poseDetectionStream,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return CustomPaint(
-                    painter: snapshot.data!,
-                    child: Image.file(
-                      bloC.pickedImage,
-                      opacity: const AlwaysStoppedAnimation(0.5),
-                    ),
-                  );
-                }
-                return const Text("Loading");
-              }),
-          StreamBuilder<CustomPainter>(
-              stream: bloC.sectionDetectionStream,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return CustomPaint(
-                    painter: snapshot.data!,
-                    child: Image.file(
-                      bloC.pickedImage,
-                      opacity: const AlwaysStoppedAnimation(0.5),
-                    ),
-                  );
-                }
-                return const Text("Loading");
-              }),
-        ],
-      ),
+      child: StreamBuilder<bool>(
+          stream: bloC.devModeStream,
+          builder: (context, snapshot) {
+            bool isDevMode = snapshot.data ?? false;
+            return Stack(
+              children: <Widget>[
+                StreamBuilder<CustomPainter>(
+                    stream: bloC.imageSegmentStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return Visibility(
+                          visible: isDevMode,
+                          child: CustomPaint(
+                            key: GlobalKey(),
+                            painter: snapshot.data!,
+                            child: Image.file(
+                              bloC.pickedImage,
+                              opacity: const AlwaysStoppedAnimation(0.0),
+                            ),
+                          ),
+                        );
+                      }
+                      return const Text("Loading");
+                    }),
+                StreamBuilder<CustomPainter>(
+                    stream: bloC.poseDetectionStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return Visibility(
+                          visible: isDevMode,
+                          child: CustomPaint(
+                            painter: snapshot.data!,
+                            child: Image.file(
+                              bloC.pickedImage,
+                              opacity: const AlwaysStoppedAnimation(0.5),
+                            ),
+                          ),
+                        );
+                      }
+                      return const Text("Loading");
+                    }),
+                StreamBuilder<CustomPainter>(
+                    stream: bloC.sectionDetectionStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return CustomPaint(
+                          painter: snapshot.data!,
+                          child: Image.file(
+                            bloC.pickedImage,
+                            opacity:
+                                AlwaysStoppedAnimation(isDevMode ? 0.5 : 0.7),
+                          ),
+                        );
+                      }
+                      return const Text("Loading");
+                    }),
+              ],
+            );
+          }),
     );
   }
 }

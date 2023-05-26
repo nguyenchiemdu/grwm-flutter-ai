@@ -8,7 +8,7 @@ class SectionDetection {
   final List<Pose> poses;
   final double confidence;
   SectionDetection(
-      {required this.mask, required this.poses, this.confidence = 0.7});
+      {required this.mask, required this.poses, required this.confidence});
 
   Section shoulderDetection() {
     Section section;
@@ -21,7 +21,8 @@ class SectionDetection {
 
     final shoulderSlope = AlgebraHelper.findSlope(left, right);
     section = AlgebraHelper.breadthPoint(
-        shoulderSlope, left, AlgebraHelper.to2Darray(mask));
+        shoulderSlope, left, AlgebraHelper.to2Darray(mask),
+        confidence: confidence);
 
     return section;
   }
@@ -37,7 +38,8 @@ class SectionDetection {
 
     final hipSlope = AlgebraHelper.findSlope(left, right);
     section = AlgebraHelper.breadthPoint(
-        hipSlope, left, AlgebraHelper.to2Darray(mask));
+        hipSlope, left, AlgebraHelper.to2Darray(mask),
+        confidence: confidence);
 
     return section;
   }
@@ -63,7 +65,8 @@ class SectionDetection {
 
     final waistSlope = hipSlope;
     section = AlgebraHelper.breadthPoint(
-        waistSlope, intersection, AlgebraHelper.to2Darray(mask));
+        waistSlope, intersection, AlgebraHelper.to2Darray(mask),
+        confidence: confidence);
 
     return section;
   }

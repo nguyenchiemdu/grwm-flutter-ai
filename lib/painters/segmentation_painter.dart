@@ -10,7 +10,7 @@ class SegmentationPainter extends CustomPainter {
   final InputImageRotation rotation;
   final double confidenceRange;
   SegmentationPainter(this.mask, this.absoluteImageSize, this.rotation,
-      {this.confidenceRange = 0.7});
+      {required this.confidenceRange});
 
   @override
   void paint(Canvas canvas, Size size) {
