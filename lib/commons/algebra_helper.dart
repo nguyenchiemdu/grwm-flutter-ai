@@ -108,23 +108,59 @@ class AlgebraHelper {
     return Point(newX.toInt(), newY.toInt());
   }
 
-  static Section breadthPoint(double slope, Point p, List<dynamic> image,
+  static Section breadthPoint(
+      double slope, Point l, Point r, List<dynamic> image,
       {required double confidence}) {
+    const jumpStep = 1;
+
+    var listParamsLeft = linearEquation(slope, l);
+    var listParamsRight = linearEquation(slope, r);
+
+    var leftA = listParamsLeft[0],
+        leftB = listParamsLeft[1],
+        leftC = listParamsLeft[2];
+    var rightA = listParamsRight[0],
+        rightB = listParamsRight[1],
+        rightC = listParamsRight[2];
+
+    var left = l;
+    var right = r;
+    var temp = pointToRight(leftA, leftB, leftC, jumpStep, left);
+
+    while (image[temp.y][temp.x] > confidence) {
+      left = temp;
+      temp = pointToRight(leftA, leftB, leftC, jumpStep, left);
+    }
+    temp = pointToLeft(rightA, rightB, rightC, jumpStep, right);
+    while (image[temp.y][temp.x] > confidence) {
+      right = temp;
+      temp = pointToLeft(rightA, rightB, rightC, jumpStep, right);
+    }
+    if (image[left.y][left.x] < confidence ||
+        image[right.y][right.x] < confidence) {
+      throw "point is out of bounds";
+    }
+    return Section(left, right);
+  }
+
+  static Section waistBreadthPoint(double slope, Point p, List<dynamic> image,
+      {required double confidence}) {
+    const jumpStep = 1;
     var listParams = linearEquation(slope, p);
     var A = listParams[0], B = listParams[1], C = listParams[2];
     var point = p;
-    var temp = pointToRight(A, B, C, 5, point);
+    var temp = pointToRight(A, B, C, jumpStep, point);
     while (image[temp.y][temp.x] > confidence) {
       point = temp;
-      temp = pointToRight(A, B, C, 5, point);
+      temp = pointToRight(A, B, C, jumpStep, point);
     }
     var right = point;
     point = p;
-    temp = pointToLeft(A, B, C, 5, point);
+    temp = pointToLeft(A, B, C, jumpStep, point);
 
     while (image[temp.y][temp.x] > confidence) {
       point = temp;
-      temp = pointToLeft(A, B, C, 5, point);
+      temp = pointToLeft(A, B, C, jumpStep, point);
     }
 
     var left = point;

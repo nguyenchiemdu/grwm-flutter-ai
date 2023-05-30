@@ -23,7 +23,7 @@ class SectionDetection {
 
     final shoulderSlope = AlgebraHelper.findSlope(left, right);
     section = AlgebraHelper.breadthPoint(
-        shoulderSlope, left, AlgebraHelper.to2Darray(mask),
+        shoulderSlope, left, right, AlgebraHelper.to2Darray(mask),
         confidence: confidence);
 
     return section;
@@ -40,7 +40,7 @@ class SectionDetection {
 
     final hipSlope = AlgebraHelper.findSlope(left, right);
     section = AlgebraHelper.breadthPoint(
-        hipSlope, left, AlgebraHelper.to2Darray(mask),
+        hipSlope, left, right, AlgebraHelper.to2Darray(mask),
         confidence: confidence);
 
     return section;
@@ -79,7 +79,7 @@ class SectionDetection {
     var jumpStep = expandDistance ~/ 5;
     for (int i = jumpStep; i < expandDistance; i += jumpStep) {
       midPoint = AlgebraHelper.pointUp(A, B, C, jumpStep, midPoint);
-      section = AlgebraHelper.breadthPoint(
+      section = AlgebraHelper.waistBreadthPoint(
           waistSlope, midPoint, AlgebraHelper.to2Darray(mask),
           confidence: confidence);
       sections.add(section);
@@ -87,7 +87,7 @@ class SectionDetection {
     midPoint = intersection;
     for (int i = jumpStep; i < expandDistance; i += jumpStep) {
       midPoint = AlgebraHelper.pointDown(A, B, C, jumpStep, midPoint);
-      section = AlgebraHelper.breadthPoint(
+      section = AlgebraHelper.waistBreadthPoint(
           waistSlope, midPoint, AlgebraHelper.to2Darray(mask),
           confidence: confidence);
       sections.add(section);
