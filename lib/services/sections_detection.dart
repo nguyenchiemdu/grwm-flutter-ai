@@ -1,5 +1,7 @@
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
+import 'package:grwm_flutter_ai/models/point.dart';
+import 'package:grwm_flutter_ai/models/section.dart';
 
 import '../commons/algebra_helper.dart';
 
@@ -44,7 +46,7 @@ class SectionDetection {
     return section;
   }
 
-  Section waistDetection() {
+  List<Section> waistDetection() {
     Section section;
     Pose pose = poses.first;
 
@@ -62,31 +64,51 @@ class SectionDetection {
     Point intersection =
         AlgebraHelper.findDiagonalIntersection(leftS, rightH, rightS, leftH);
     var hipSlope = AlgebraHelper.findSlope(leftH, rightH);
+    // find the expand distance to move the intersection vertically
+
+    var listParams = AlgebraHelper.linearEquation(hipSlope, leftH);
+    double A = listParams[0];
+    double B = listParams[1];
+    double C = listParams[2];
+    double distanceA1A3 = AlgebraHelper.distancePointToLine(leftS, A, B, C);
+    int expandDistance = (distanceA1A3 * 0.1).toInt();
 
     final waistSlope = hipSlope;
-    section = AlgebraHelper.breadthPoint(
-        waistSlope, intersection, AlgebraHelper.to2Darray(mask),
-        confidence: confidence);
-
-    return section;
-  }
-}
-
-class Point {
-  int x, y;
-  Point(this.x, this.y);
-  @override
-  String toString() {
-    return "{$x, $y}";
-  }
-}
-
-class Section {
-  Point start;
-  Point end;
-  Section(this.start, this.end);
-  @override
-  String toString() {
-    return "[$start, $end]";
+    List<Section> sections = [];
+    var midPoint = intersection;
+    var jumpStep = expandDistance ~/ 5;
+    for (int i = jumpStep; i < expandDistance; i += jumpStep) {
+      midPoint = AlgebraHelper.pointUp(A, B, C, jumpStep, midPoint);
+      section = AlgebraHelper.breadthPoint(
+          waistSlope, midPoint, AlgebraHelper.to2Darray(mask),
+          confidence: confidence);
+      sections.add(section);
+    }
+    midPoint = intersection;
+    for (int i = jumpStep; i < expandDistance; i += jumpStep) {
+      midPoint = AlgebraHelper.pointDown(A, B, C, jumpStep, midPoint);
+      section = AlgebraHelper.breadthPoint(
+          waistSlope, midPoint, AlgebraHelper.to2Darray(mask),
+          confidence: confidence);
+      sections.add(section);
+    }
+    // sections is all the founded sections in the waist area
+    // find out the actual mid section
+    Section maxSection = sections.first;
+    Section minSection = sections.first;
+    for (var section in sections) {
+      if (maxSection.length < section.length) {
+        maxSection = section;
+      }
+      if (minSection.length > section.length) {
+        minSection = section;
+      }
+    }
+    if (maxSection == sections.first || maxSection == sections.last) {
+      return [minSection];
+    } else {
+      return [maxSection];
+    }
+    // return sections;
   }
 }

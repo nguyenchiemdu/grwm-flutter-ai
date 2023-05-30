@@ -103,15 +103,18 @@ class MainBloC {
     var sectionShoulder = _sectionDetection.shoulderDetection();
     var sectionHip = _sectionDetection.hipDetection();
     var sectionWaist = _sectionDetection.waistDetection();
-
+    var listWaitsPoints = [];
+    for (var section in sectionWaist) {
+      listWaitsPoints.add(section.start);
+      listWaitsPoints.add(section.end);
+    }
     final SectionPainter sectionPainter = SectionPainter(
         [
           sectionShoulder.start,
           sectionShoulder.end,
           sectionHip.start,
           sectionHip.end,
-          sectionWaist.start,
-          sectionWaist.end
+          ...listWaitsPoints
         ],
         Size(size.width.toDouble(), size.height.toDouble()),
         size.needRotate

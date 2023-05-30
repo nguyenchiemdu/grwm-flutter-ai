@@ -1,8 +1,8 @@
 import 'dart:math' hide Point;
-import 'dart:math';
 
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
-import 'package:grwm_flutter_ai/services/sections_detection.dart';
+import 'package:grwm_flutter_ai/models/point.dart';
+import 'package:grwm_flutter_ai/models/section.dart';
 import 'package:matrix2d/matrix2d.dart';
 
 class AlgebraHelper {
@@ -130,6 +130,10 @@ class AlgebraHelper {
     var x1 = a.x, y1 = a.y;
     var x2 = b.x, y2 = b.y;
     return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * y2 - y1);
+  }
+
+  static distancePointToLine(Point m, double A, double B, double C) {
+    return (A * m.x + B * m.y + C).abs() / sqrt(A * A + B * B);
   }
 
   static List<dynamic> to2Darray(SegmentationMask mask) {

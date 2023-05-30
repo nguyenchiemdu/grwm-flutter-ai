@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
+import 'package:grwm_flutter_ai/models/point.dart';
 
-import '../services/sections_detection.dart';
 import 'coordinates_translator.dart';
 
 class SectionPainter extends CustomPainter {
