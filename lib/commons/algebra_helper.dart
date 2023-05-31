@@ -113,17 +113,31 @@ class AlgebraHelper {
     var listParams = linearEquation(slope, p);
     var A = listParams[0], B = listParams[1], C = listParams[2];
     var point = p;
-    while (image[point.y][point.x] > confidence) {
-      point = pointToRight(A, B, C, 5, point);
+    var temp = pointToRight(A, B, C, 5, point);
+    while (image[temp.y][temp.x] > confidence) {
+      point = temp;
+      temp = pointToRight(A, B, C, 5, point);
     }
     var right = point;
     point = p;
-    while (image[point.y][point.x] > confidence) {
-      point = pointToLeft(A, B, C, 5, point);
+    temp = pointToLeft(A, B, C, 5, point);
+
+    while (image[temp.y][temp.x] > confidence) {
+      point = temp;
+      temp = pointToLeft(A, B, C, 5, point);
     }
 
     var left = point;
+    if (image[left.y][left.x] < confidence ||
+        image[right.y][right.x] < confidence) {
+      throw "point is out of bounds";
+    }
     return Section(left, right);
+  }
+
+  static isPointInsideMask(
+      Point point, List<dynamic> image, double confidence) {
+    return image[point.y][point.x] > confidence;
   }
 
   static distance2Points(Point a, Point b) {

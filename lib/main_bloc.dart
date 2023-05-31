@@ -42,10 +42,10 @@ class MainBloC {
     _confidenceStreamController.add(0.7);
     _devModeStreamController.add(false);
   }
-  void detectBody() async {
+  Future detectBody() async {
     await segmentImage();
     await poseDetection();
-    sectionDetection();
+    await sectionDetection();
   }
 
   Future segmentImage() async {
@@ -95,32 +95,45 @@ class MainBloC {
   }
 
   Future sectionDetection() async {
-    _sectionDetection = SectionDetection(
-        mask: mask!,
-        poses: poses,
-        confidence: _confidenceStreamController.value);
     final size = ImageSizeGetter.getSize(FileInput(pickedImage));
-    var sectionShoulder = _sectionDetection.shoulderDetection();
-    var sectionHip = _sectionDetection.hipDetection();
-    var sectionWaist = _sectionDetection.waistDetection();
-    var listWaitsPoints = [];
-    for (var section in sectionWaist) {
-      listWaitsPoints.add(section.start);
-      listWaitsPoints.add(section.end);
+
+    try {
+      _sectionDetection = SectionDetection(
+          mask: mask!,
+          poses: poses,
+          confidence: _confidenceStreamController.value);
+      var sectionShoulder = _sectionDetection.shoulderDetection();
+      var sectionHip = _sectionDetection.hipDetection();
+      var sectionWaist = _sectionDetection.waistDetection();
+
+      var listWaitsPoints = [];
+      for (var section in sectionWaist) {
+        listWaitsPoints.add(section.start);
+        listWaitsPoints.add(section.end);
+      }
+      final SectionPainter sectionPainter = SectionPainter(
+          [
+            sectionShoulder.start,
+            sectionShoulder.end,
+            sectionHip.start,
+            sectionHip.end,
+            ...listWaitsPoints
+          ],
+          Size(size.width.toDouble(), size.height.toDouble()),
+          size.needRotate
+              ? InputImageRotation.rotation90deg
+              : InputImageRotation.rotation0deg);
+      _sectionDetectionPaintStreamController.add(sectionPainter);
+    } catch (e) {
+      final SectionPainter sectionPainter = SectionPainter(
+          [],
+          Size(size.width.toDouble(), size.height.toDouble()),
+          size.needRotate
+              ? InputImageRotation.rotation90deg
+              : InputImageRotation.rotation0deg);
+      _sectionDetectionPaintStreamController.add(sectionPainter);
+      rethrow;
     }
-    final SectionPainter sectionPainter = SectionPainter(
-        [
-          sectionShoulder.start,
-          sectionShoulder.end,
-          sectionHip.start,
-          sectionHip.end,
-          ...listWaitsPoints
-        ],
-        Size(size.width.toDouble(), size.height.toDouble()),
-        size.needRotate
-            ? InputImageRotation.rotation90deg
-            : InputImageRotation.rotation0deg);
-    _sectionDetectionPaintStreamController.add(sectionPainter);
   }
 
   void dispose() {
