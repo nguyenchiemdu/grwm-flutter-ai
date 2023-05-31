@@ -101,7 +101,8 @@ class MainBloC {
       _sectionDetection = SectionDetection(
           mask: mask!,
           poses: poses,
-          confidence: _confidenceStreamController.value);
+          confidence: _confidenceStreamController.value,
+          isRotated: size.needRotate);
       var sectionShoulder = _sectionDetection.shoulderDetection();
       var sectionHip = _sectionDetection.hipDetection();
       var sectionWaist = _sectionDetection.waistDetection();

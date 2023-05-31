@@ -9,8 +9,12 @@ class SectionDetection {
   final SegmentationMask mask;
   final List<Pose> poses;
   final double confidence;
+  final bool isRotated;
   SectionDetection(
-      {required this.mask, required this.poses, required this.confidence});
+      {required this.mask,
+      required this.poses,
+      required this.confidence,
+      this.isRotated = false});
 
   Section shoulderDetection() {
     Section section;
@@ -20,7 +24,12 @@ class SectionDetection {
         pose.landmarks[PoseLandmarkType.rightShoulder]!;
     Point left = Point(leftShoulder.x.toInt(), leftShoulder.y.toInt());
     Point right = Point(rightShoulder.x.toInt(), rightShoulder.y.toInt());
-
+    // swap the left and right if image is rotated
+    if (isRotated) {
+      var tmp = left;
+      left = right;
+      right = tmp;
+    }
     final shoulderSlope = AlgebraHelper.findSlope(left, right);
     section = AlgebraHelper.breadthPoint(
         shoulderSlope, left, right, AlgebraHelper.to2Darray(mask),
