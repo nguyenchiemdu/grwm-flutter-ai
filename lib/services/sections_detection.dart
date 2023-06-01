@@ -10,6 +10,7 @@ class SectionDetection {
   final List<Pose> poses;
   final double confidence;
   final bool isRotated;
+  static const expandRatio = 1.2;
   SectionDetection(
       {required this.mask,
       required this.poses,
@@ -91,8 +92,14 @@ class SectionDetection {
       section = AlgebraHelper.waistBreadthPoint(
           waistSlope, midPoint, AlgebraHelper.to2Darray(mask),
           confidence: confidence);
+      if (sections.isNotEmpty && !_shouldExpand(sections.last, section)) {
+        break;
+      }
       sections.add(section);
     }
+    // for (section in sections) {
+    //   print(section.getDistanceToMid());
+    // }
     midPoint = intersection;
     for (int i = jumpStep; i < expandDistance; i += jumpStep) {
       midPoint = AlgebraHelper.pointDown(A, B, C, jumpStep, midPoint);
@@ -119,5 +126,21 @@ class SectionDetection {
       return [maxSection];
     }
     // return sections;
+  }
+
+  bool _shouldExpand(Section oldSection, Section newSection) {
+    var leftRatio = _getRatio(oldSection.getMiddleDistanceToLeft(),
+        newSection.getMiddleDistanceToLeft());
+    var rightRatio = _getRatio(oldSection.getMiddleDistanceToRight(),
+        newSection.getMiddleDistanceToRight());
+    if (leftRatio > expandRatio || rightRatio > expandRatio) {
+      return false;
+    }
+    return true;
+  }
+
+  double _getRatio(double a, double b) {
+    if (a > b) return a / b;
+    return b / a;
   }
 }

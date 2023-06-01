@@ -1,14 +1,30 @@
 import 'dart:math';
 
+import 'package:grwm_flutter_ai/commons/algebra_helper.dart';
 import 'package:grwm_flutter_ai/models/point.dart';
 
 class Section {
   Point start;
   Point end;
-  Section(this.start, this.end);
+  Point? mid;
+  Section(this.start, this.end, {this.mid});
   @override
   String toString() {
-    return "[$start, $end]";
+    return "[$start, $end], mid: $mid";
+  }
+
+  String getDistanceToMid() {
+    double r = AlgebraHelper.distance2Points(end, mid!);
+    double l = AlgebraHelper.distance2Points(start, mid!);
+    return '[$l,$r]';
+  }
+
+  double getMiddleDistanceToLeft() {
+    return AlgebraHelper.distance2Points(start, mid!);
+  }
+
+  double getMiddleDistanceToRight() {
+    return AlgebraHelper.distance2Points(end, mid!);
   }
 
   double get length {

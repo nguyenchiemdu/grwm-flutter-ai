@@ -168,7 +168,7 @@ class AlgebraHelper {
         image[right.y][right.x] < confidence) {
       throw "point is out of bounds";
     }
-    return Section(left, right);
+    return Section(left, right, mid: p);
   }
 
   static isPointInsideMask(
@@ -179,7 +179,7 @@ class AlgebraHelper {
   static distance2Points(Point a, Point b) {
     var x1 = a.x, y1 = a.y;
     var x2 = b.x, y2 = b.y;
-    return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * y2 - y1);
+    return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
   }
 
   static distancePointToLine(Point m, double A, double B, double C) {
