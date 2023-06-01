@@ -51,8 +51,9 @@ class _MyHomePageState extends State<MyHomePage> {
     bloC.pickedImage = file;
     try {
       await bloC.detectBody();
-    } catch (e) {
-      // print(e);
+    } catch (e, s) {
+      print(e);
+      debugPrintStack(stackTrace: s);
       if (!mounted) return;
       showDialog(
         context: context,

@@ -10,7 +10,7 @@ class SectionDetection {
   final List<Pose> poses;
   final double confidence;
   final bool isRotated;
-  static const expandRatio = 1.2;
+  static const expandRatio = 1.1;
   SectionDetection(
       {required this.mask,
       required this.poses,
@@ -101,19 +101,25 @@ class SectionDetection {
       sections.add(section);
     }
 
-    print(sections.length);
-    if (sections.length >= 3) {
-      // for (section in sections) {
+    // for (section in sections) {
     //   print(section.getDistanceToMid());
     // }
-      midPoint = intersection;
-      for (int i = jumpStep; i < expandDistance; i += jumpStep) {
-        midPoint = AlgebraHelper.pointDown(A, B, C, jumpStep, midPoint);
-        section = AlgebraHelper.waistBreadthPoint(
-            waistSlope, midPoint, AlgebraHelper.to2Darray(mask),
-            confidence: confidence);
-        sections.add(section);
+    midPoint = intersection;
+    for (int i = jumpStep; i < expandDistance; i += jumpStep) {
+      midPoint = AlgebraHelper.pointDown(A, B, C, jumpStep, midPoint);
+      section = AlgebraHelper.waistBreadthPoint(
+          waistSlope, midPoint, AlgebraHelper.to2Darray(mask),
+          confidence: confidence);
+      if (sections.isNotEmpty && !_shouldExpand(sections.last, section)) {
+        break;
       }
+      if (!_isEqualDistance(section)) {
+        break;
+      }
+      sections.add(section);
+    }
+    print(sections.length);
+    if (sections.length >= 3) {
       // sections is all the founded sections in the waist area
       // find out the actual mid section
       Section maxSection = sections.first;
@@ -128,10 +134,11 @@ class SectionDetection {
       }
       if (maxSection == sections.first || maxSection == sections.last) {
         return [minSection];
-      } 
+      }
       return [maxSection];
+      // return sections;
     } else {
-        throw ('Please take another photo following the instructions.');
+      throw ('Cannot detect midsection. Please take another photo following the instructions.');
     }
   }
 
@@ -146,13 +153,13 @@ class SectionDetection {
     return true;
   }
 
-  bool _isEqualDistance (Section section) {
+  bool _isEqualDistance(Section section) {
     var leftDist = section.getMiddleDistanceToLeft();
     var rightDist = section.getMiddleDistanceToRight();
 
     var ratio = leftDist / rightDist;
     if (rightDist < leftDist) ratio = rightDist / leftDist;
-    if (ratio < 0.90) return false;
+    if (ratio < 0.85) return false;
     return true;
   }
 
