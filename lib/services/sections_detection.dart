@@ -95,37 +95,44 @@ class SectionDetection {
       if (sections.isNotEmpty && !_shouldExpand(sections.last, section)) {
         break;
       }
+      if (!_isEqualDistance(section)) {
+        break;
+      }
       sections.add(section);
     }
-    // for (section in sections) {
+
+    print(sections.length);
+    if (sections.length >= 3) {
+      // for (section in sections) {
     //   print(section.getDistanceToMid());
     // }
-    midPoint = intersection;
-    for (int i = jumpStep; i < expandDistance; i += jumpStep) {
-      midPoint = AlgebraHelper.pointDown(A, B, C, jumpStep, midPoint);
-      section = AlgebraHelper.waistBreadthPoint(
-          waistSlope, midPoint, AlgebraHelper.to2Darray(mask),
-          confidence: confidence);
-      sections.add(section);
-    }
-    // sections is all the founded sections in the waist area
-    // find out the actual mid section
-    Section maxSection = sections.first;
-    Section minSection = sections.first;
-    for (var section in sections) {
-      if (maxSection.length < section.length) {
-        maxSection = section;
+      midPoint = intersection;
+      for (int i = jumpStep; i < expandDistance; i += jumpStep) {
+        midPoint = AlgebraHelper.pointDown(A, B, C, jumpStep, midPoint);
+        section = AlgebraHelper.waistBreadthPoint(
+            waistSlope, midPoint, AlgebraHelper.to2Darray(mask),
+            confidence: confidence);
+        sections.add(section);
       }
-      if (minSection.length > section.length) {
-        minSection = section;
+      // sections is all the founded sections in the waist area
+      // find out the actual mid section
+      Section maxSection = sections.first;
+      Section minSection = sections.first;
+      for (var section in sections) {
+        if (maxSection.length < section.length) {
+          maxSection = section;
+        }
+        if (minSection.length > section.length) {
+          minSection = section;
+        }
       }
-    }
-    if (maxSection == sections.first || maxSection == sections.last) {
-      return [minSection];
-    } else {
+      if (maxSection == sections.first || maxSection == sections.last) {
+        return [minSection];
+      } 
       return [maxSection];
+    } else {
+        throw ('Please take another photo following the instructions.');
     }
-    // return sections;
   }
 
   bool _shouldExpand(Section oldSection, Section newSection) {
@@ -136,6 +143,16 @@ class SectionDetection {
     if (leftRatio > expandRatio || rightRatio > expandRatio) {
       return false;
     }
+    return true;
+  }
+
+  bool _isEqualDistance (Section section) {
+    var leftDist = section.getMiddleDistanceToLeft();
+    var rightDist = section.getMiddleDistanceToRight();
+
+    var ratio = leftDist / rightDist;
+    if (rightDist < leftDist) ratio = rightDist / leftDist;
+    if (ratio < 0.90) return false;
     return true;
   }
 
