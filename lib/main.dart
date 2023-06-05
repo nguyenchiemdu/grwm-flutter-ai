@@ -52,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       await bloC.detectBody();
     } catch (e, s) {
-      print(e);
+      debugPrint(e.toString());
       debugPrintStack(stackTrace: s);
       if (!mounted) return;
       showDialog(

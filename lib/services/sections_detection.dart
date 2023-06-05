@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
 import 'package:grwm_flutter_ai/models/point.dart';
@@ -118,7 +119,7 @@ class SectionDetection {
       }
       sections.add(section);
     }
-    print(sections.length);
+    debugPrint('${sections.length}');
     if (sections.length >= 3) {
       // sections is all the founded sections in the waist area
       // find out the actual mid section

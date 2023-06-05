@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
+import 'package:grwm_flutter_ai/models/section.dart';
 import 'package:grwm_flutter_ai/painters/pose_painter.dart';
 import 'package:grwm_flutter_ai/painters/section_painter.dart';
 import 'package:grwm_flutter_ai/services/image_segmentation.dart';
@@ -106,7 +107,7 @@ class MainBloC {
       var sectionShoulder = _sectionDetection.shoulderDetection();
       var sectionHip = _sectionDetection.hipDetection();
       var sectionWaist = _sectionDetection.waistDetection();
-
+      _bodyShapeDetection(sectionShoulder, sectionWaist.first, sectionHip);
       var listWaitsPoints = [];
       for (var section in sectionWaist) {
         listWaitsPoints.add(section.start);
@@ -134,6 +135,34 @@ class MainBloC {
               : InputImageRotation.rotation0deg);
       _sectionDetectionPaintStreamController.add(sectionPainter);
       rethrow;
+    }
+  }
+
+  void _bodyShapeDetection(Section a1, Section a2, Section a3) {
+    if (a2.length > a1.length && a2.length > a3.length) {
+      debugPrint("Diamond");
+    }
+    if (0.95 < a1.length / a2.length &&
+        a1.length / a2.length <= 1 &&
+        0.95 < a2.length / a3.length &&
+        a2.length / a3.length <= 1 &&
+        0.95 < a1.length / a3.length &&
+        a1.length / a3.length <= 1) {
+      debugPrint("Hourglass");
+    }
+    if (a3.length / a1.length > 1 && a2.length / a3.length < 1) {
+      if (a1.length / a2.length > 1) {
+        debugPrint("Triangle A");
+      } else {
+        debugPrint("Triangle B");
+      }
+    }
+    if (a1.length / a3.length > 1 && a2.length / a1.length < 1) {
+      if (a2.length / a3.length < 1) {
+        debugPrint("Inverted triangle X");
+      } else {
+        debugPrint("Inverted triangle Y");
+      }
     }
   }
 
