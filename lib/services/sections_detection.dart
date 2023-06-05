@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
+import 'package:grwm_flutter_ai/commons/app_const.dart';
 import 'package:grwm_flutter_ai/models/point.dart';
 import 'package:grwm_flutter_ai/models/section.dart';
 
@@ -11,7 +12,6 @@ class SectionDetection {
   final List<Pose> poses;
   final double confidence;
   final bool isRotated;
-  static const expandRatio = 1.1;
   SectionDetection(
       {required this.mask,
       required this.poses,
@@ -82,7 +82,8 @@ class SectionDetection {
     double B = listParams[1];
     double C = listParams[2];
     double distanceA1A3 = AlgebraHelper.distancePointToLine(leftS, A, B, C);
-    int expandDistance = (distanceA1A3 * 0.1).toInt();
+    int expandDistance =
+        (distanceA1A3 * AppConst.midsectionExpandPercent ~/ 2).toInt();
 
     final waistSlope = hipSlope;
     List<Section> sections = [];
@@ -120,7 +121,7 @@ class SectionDetection {
       sections.add(section);
     }
     debugPrint('${sections.length}');
-    if (sections.length >= 3) {
+    if (sections.length >= AppConst.midsectionMinNoOfLines) {
       // sections is all the founded sections in the waist area
       // find out the actual mid section
       Section maxSection = sections.first;
@@ -148,7 +149,8 @@ class SectionDetection {
         newSection.getMiddleDistanceToLeft());
     var rightRatio = _getRatio(oldSection.getMiddleDistanceToRight(),
         newSection.getMiddleDistanceToRight());
-    if (leftRatio > expandRatio || rightRatio > expandRatio) {
+    if (leftRatio > AppConst.midsectionExpandRatio ||
+        rightRatio > AppConst.midsectionExpandRatio) {
       return false;
     }
     return true;
@@ -160,7 +162,7 @@ class SectionDetection {
 
     var ratio = leftDist / rightDist;
     if (rightDist < leftDist) ratio = rightDist / leftDist;
-    if (ratio < 0.85) return false;
+    if (ratio < AppConst.midsectionDeltaRatio) return false;
     return true;
   }
 

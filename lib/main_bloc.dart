@@ -14,6 +14,8 @@ import 'package:image_size_getter/file_input.dart';
 import 'package:image_size_getter/image_size_getter.dart' hide Size;
 import 'package:rxdart/subjects.dart';
 
+import 'commons/app_const.dart';
+
 class MainBloC {
   final ImageSegmentation _imageSegmentation = ImageSegmentation();
   final PoseDetection _poseDetection = PoseDetection();
@@ -40,7 +42,7 @@ class MainBloC {
   late File pickedImage;
   late SectionDetection _sectionDetection;
   MainBloC() {
-    _confidenceStreamController.add(0.7);
+    _confidenceStreamController.add(AppConst.confidenceParameter);
     _devModeStreamController.add(false);
   }
   Future detectBody() async {
@@ -139,26 +141,31 @@ class MainBloC {
   }
 
   void _bodyShapeDetection(Section a1, Section a2, Section a3) {
-    if (a2.length > a1.length && a2.length > a3.length) {
+    if (a2 > a1 && a2 > a3) {
       debugPrint("Diamond");
     }
-    if (0.95 < a1.length / a2.length &&
-        a1.length / a2.length <= 1 &&
-        0.95 < a2.length / a3.length &&
-        a2.length / a3.length <= 1 &&
-        0.95 < a1.length / a3.length &&
-        a1.length / a3.length <= 1) {
+    if (AppConst.rectangleBottomRatio < a1 / a2 &&
+        a1 / a2 <= AppConst.rectangleTopRatio &&
+        AppConst.rectangleBottomRatio < a2 / a3 &&
+        a2 / a3 <= AppConst.rectangleTopRatio &&
+        AppConst.rectangleBottomRatio < a1 / a3 &&
+        a1 / a3 <= AppConst.rectangleTopRatio) {
+      debugPrint("Rectangle");
+    }
+    if (AppConst.hourglassA1A3Bot < a1 / a3 &&
+        a1 / a3 <= AppConst.hourglassA1A3Top &&
+        a2 / a3 <= AppConst.hourglassA2A3Top) {
       debugPrint("Hourglass");
     }
-    if (a3.length / a1.length > 1 && a2.length / a3.length < 1) {
-      if (a1.length / a2.length > 1) {
+    if (a3 / a1 > AppConst.triangleRatio && a2 / a3 < AppConst.triangleRatio) {
+      if (a1 / a2 > 1) {
         debugPrint("Triangle A");
       } else {
         debugPrint("Triangle B");
       }
     }
-    if (a1.length / a3.length > 1 && a2.length / a1.length < 1) {
-      if (a2.length / a3.length < 1) {
+    if (a1 / a3 > AppConst.triangleRatio && a2 / a1 < AppConst.triangleRatio) {
+      if (a2 / a3 < AppConst.triangleRatio) {
         debugPrint("Inverted triangle X");
       } else {
         debugPrint("Inverted triangle Y");

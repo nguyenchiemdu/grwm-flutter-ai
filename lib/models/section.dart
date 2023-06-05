@@ -31,4 +31,16 @@ class Section {
     return sqrt((start.x - end.x) * (start.x - end.x) +
         (start.y - end.y) * (start.y - end.y));
   }
+
+  bool operator >(Section other) {
+    return length > other.length;
+  }
+
+  bool operator <(Section other) {
+    return length < other.length;
+  }
+
+  double operator /(Section other) {
+    return length / other.length;
+  }
 }
