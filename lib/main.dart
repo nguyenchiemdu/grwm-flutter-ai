@@ -58,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
         maxWidth: ModelConst.maxWidth,
         maxHeight: ModelConst.maxHeight);
     final File file = File(xFile!.path);
-    setState(() {});
+    // setState(() {});
     bloC.pickedImage = file;
     try {
       await bloC.detectBody();
@@ -96,6 +96,12 @@ class _MyHomePageState extends State<MyHomePage> {
       //   },
       // );
     }
+  }
+
+  void _onCapture() {
+    _screenshotController.capture().then((data) async {
+      await ImageGallerySaver.saveImage(data!, quality: 100);
+    });
   }
 
   @override
@@ -165,14 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   height: 24,
                                 ),
                                 color: Colors.white,
-                                onPressed: () {
-                                  _screenshotController
-                                      .capture()
-                                      .then((data) async {
-                                    await ImageGallerySaver.saveImage(data!,
-                                        quality: 60, name: "hello");
-                                  });
-                                },
+                                onPressed: _onCapture,
                               ),
                               const Text(
                                 AppStrings.capture,

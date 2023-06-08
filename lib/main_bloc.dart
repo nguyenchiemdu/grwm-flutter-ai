@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
 import 'package:grwm_flutter_ai/commons/app_strings.dart';
+import 'package:grwm_flutter_ai/models/body_recog_state.dart';
 import 'package:grwm_flutter_ai/models/section.dart';
 import 'package:grwm_flutter_ai/painters/pose_painter.dart';
 import 'package:grwm_flutter_ai/painters/section_painter.dart';
@@ -20,64 +21,50 @@ import 'commons/model_const.dart';
 
 class MainBloC {
   final ImageSegmentation _imageSegmentation = ImageSegmentation();
-  final PoseDetection _poseDetection = PoseDetection();
-  final StreamController<CustomPainter> _imageSegmentPaintStreamController =
-      StreamController<CustomPainter>();
-  final StreamController<CustomPainter> _poseDetectionPaintStreamController =
-      StreamController<CustomPainter>();
-  final StreamController<CustomPainter> _sectionDetectionPaintStreamController =
-      StreamController<CustomPainter>();
+  final PoseDetection _poseDetectionServices = PoseDetection();
   final BehaviorSubject<double> _confidenceStreamController =
       BehaviorSubject<double>();
   final BehaviorSubject<bool> _devModeStreamController =
       BehaviorSubject<bool>();
   final StreamController<String> _errorStreamController =
       StreamController<String>();
-  Stream<CustomPainter> get imageSegmentStream =>
-      _imageSegmentPaintStreamController.stream;
-  Stream<CustomPainter> get poseDetectionStream =>
-      _poseDetectionPaintStreamController.stream;
-  Stream<CustomPainter> get sectionDetectionStream =>
-      _sectionDetectionPaintStreamController.stream;
+  final StreamController<BodyRecogState> _bodyRecogStreamController =
+      StreamController<BodyRecogState>();
   Stream<double> get confidenceStream => _confidenceStreamController.stream;
   Stream<bool> get devModeStream => _devModeStreamController.stream;
   Stream<String> get errorStream => _errorStreamController.stream;
+  Stream<BodyRecogState> get bodyRecogStream =>
+      _bodyRecogStreamController.stream;
   SegmentationMask? mask;
   late List<Pose> poses;
   late File pickedImage;
-  late SectionDetection _sectionDetection;
+  late SectionDetection _sectionDetectionService;
   MainBloC() {
     _confidenceStreamController.add(ModelConst.confidenceParameter);
     _devModeStreamController.add(false);
   }
   Future detectBody() async {
+    _bodyRecogStreamController.add(BodyRecogState(isLoading: true));
     _errorStreamController.add("");
+    BodyRecogState bodyRecogState = BodyRecogState();
     try {
-      await segmentImage();
-      await poseDetection();
-      await sectionDetection();
+      bodyRecogState.imageSegment = await _segmentImage();
+      bodyRecogState.poseDetection = await _poseDetection();
+      bodyRecogState.sectionDetection = await _sectionDetection();
     } catch (e, s) {
       debugPrint(e.toString());
       debugPrintStack(stackTrace: s);
       _errorStreamController.add(e.toString());
     }
-  }
-
-  Future segmentImage() async {
-    log("segmentImage");
-    mask = await _imageSegmentation.imageSegmentation(pickedImage);
-    double confidence = _confidenceStreamController.value;
-    var painter = _drawPainter(mask!, pickedImage, confidence: confidence);
-    _imageSegmentPaintStreamController.add(painter);
+    _bodyRecogStreamController.add(bodyRecogState);
   }
 
   void changeConfidenceRange(double amount) {
-    double newValue = amount;
-    SegmentationPainter painter =
-        _drawPainter(mask!, pickedImage, confidence: newValue);
-    _confidenceStreamController.add(newValue);
-    _imageSegmentPaintStreamController.add(painter);
-    sectionDetection();
+    // double newValue = amount;
+    // SegmentationPainter painter =
+    //     _drawPainter(mask!, pickedImage, confidence: newValue);
+    // _confidenceStreamController.add(newValue);
+    // _sectionDetection();
   }
 
   void changeDevMode() {
@@ -98,10 +85,17 @@ class MainBloC {
     return painter;
   }
 
-  Future poseDetection() async {
-    log("poseDetection");
+  Future<CustomPainter?> _segmentImage() async {
+    log("segmentImage");
+    mask = await _imageSegmentation.imageSegmentation(pickedImage);
+    double confidence = _confidenceStreamController.value;
+    var painter = _drawPainter(mask!, pickedImage, confidence: confidence);
+    return painter;
+  }
 
-    poses = await _poseDetection.imagePoseDetection(pickedImage);
+  Future<CustomPainter?> _poseDetection() async {
+    log("poseDetection");
+    poses = await _poseDetectionServices.imagePoseDetection(pickedImage);
     final size = ImageSizeGetter.getSize(FileInput(pickedImage));
     // if poses emtpy that means model can not detect the pose
     if (poses.isEmpty) {
@@ -113,22 +107,22 @@ class MainBloC {
         size.needRotate
             ? InputImageRotation.rotation90deg
             : InputImageRotation.rotation0deg);
-    _poseDetectionPaintStreamController.add(painter);
+    return painter;
   }
 
-  Future sectionDetection() async {
+  Future<CustomPainter?> _sectionDetection() async {
     log("sectionDetection");
     final size = ImageSizeGetter.getSize(FileInput(pickedImage));
 
     try {
-      _sectionDetection = SectionDetection(
+      _sectionDetectionService = SectionDetection(
           mask: mask!,
           poses: poses,
           confidence: _confidenceStreamController.value,
           isRotated: size.needRotate);
-      var sectionShoulder = _sectionDetection.shoulderDetection();
-      var sectionHip = _sectionDetection.hipDetection();
-      var sectionWaist = _sectionDetection.waistDetection();
+      var sectionShoulder = _sectionDetectionService.shoulderDetection();
+      var sectionHip = _sectionDetectionService.hipDetection();
+      var sectionWaist = _sectionDetectionService.waistDetection();
       _bodyShapeDetection(sectionShoulder, sectionWaist.first, sectionHip);
       var listWaitsPoints = [];
       for (var section in sectionWaist) {
@@ -147,15 +141,15 @@ class MainBloC {
           size.needRotate
               ? InputImageRotation.rotation90deg
               : InputImageRotation.rotation0deg);
-      _sectionDetectionPaintStreamController.add(sectionPainter);
+      return sectionPainter;
     } catch (e) {
-      final SectionPainter sectionPainter = SectionPainter(
-          [],
-          Size(size.width.toDouble(), size.height.toDouble()),
-          size.needRotate
-              ? InputImageRotation.rotation90deg
-              : InputImageRotation.rotation0deg);
-      _sectionDetectionPaintStreamController.add(sectionPainter);
+      // final SectionPainter sectionPainter = SectionPainter(
+      //     [],
+      //     Size(size.width.toDouble(), size.height.toDouble()),
+      //     size.needRotate
+      //         ? InputImageRotation.rotation90deg
+      //         : InputImageRotation.rotation0deg);
+      // _sectionDetectionPaintStreamController.add(sectionPainter);
       rethrow;
     }
   }
@@ -196,11 +190,9 @@ class MainBloC {
   }
 
   void dispose() {
-    _imageSegmentPaintStreamController.close();
-    _poseDetectionPaintStreamController.close();
     _confidenceStreamController.close();
-    _sectionDetectionPaintStreamController.close();
     _devModeStreamController.close();
     _errorStreamController.close();
+    _bodyRecogStreamController.close();
   }
 }
