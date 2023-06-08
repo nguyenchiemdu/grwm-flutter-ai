@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
+import 'package:grwm_flutter_ai/commons/app_colors.dart';
 import 'package:grwm_flutter_ai/models/point.dart';
 
 import 'coordinates_translator.dart';
@@ -16,7 +17,7 @@ class SectionPainter extends CustomPainter {
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 5.0
-      ..color = Colors.purple;
+      ..color = AppColors.blue;
 
     for (final point in points) {
       final tx =
