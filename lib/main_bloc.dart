@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
@@ -52,6 +53,7 @@ class MainBloC {
   }
 
   Future segmentImage() async {
+    log("segmentImage");
     mask = await _imageSegmentation.imageSegmentation(pickedImage);
     double confidence = _confidenceStreamController.value;
     var painter = _drawPainter(mask!, pickedImage, confidence: confidence);
@@ -86,6 +88,8 @@ class MainBloC {
   }
 
   Future poseDetection() async {
+    log("poseDetection");
+
     poses = await _poseDetection.imagePoseDetection(pickedImage);
     final size = ImageSizeGetter.getSize(FileInput(pickedImage));
     final painter = PosePainter(
@@ -98,6 +102,7 @@ class MainBloC {
   }
 
   Future sectionDetection() async {
+    log("sectionDetection");
     final size = ImageSizeGetter.getSize(FileInput(pickedImage));
 
     try {

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:grwm_flutter_ai/commons/app_const.dart';
 import 'package:grwm_flutter_ai/main_bloc.dart';
 // import 'package:grwm_flutter_ai/widgets/change_confidence.dart';
 import 'package:grwm_flutter_ai/widgets/image_detection.dart';
@@ -45,7 +46,10 @@ class _MyHomePageState extends State<MyHomePage> {
   final ImagePicker _picker = ImagePicker();
   final ScreenshotController _screenshotController = ScreenshotController();
   void onPickImage() async {
-    final xFile = await _picker.pickImage(source: ImageSource.gallery);
+    final xFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: AppConst.maxWidth,
+        maxHeight: AppConst.maxHeight);
     final File file = File(xFile!.path);
     setState(() {});
     bloC.pickedImage = file;

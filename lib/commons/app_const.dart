@@ -1,4 +1,7 @@
 class AppConst {
+  // reshape input image to faster the rendering
+  static const maxWidth = 500.0;
+  static const maxHeight = 1200.0;
   // The confidences when detect the mask
   static const confidenceParameter = 0.7;
   // The acceptable ration between leftside and rightside of midsection
