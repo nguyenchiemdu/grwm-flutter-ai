@@ -9,7 +9,16 @@ class PosePainter extends CustomPainter {
   final List<Pose> poses;
   final Size absoluteImageSize;
   final InputImageRotation rotation;
-
+  final List<PoseLandmarkType> pointLandmarksFilters = [
+    PoseLandmarkType.leftFootIndex,
+    PoseLandmarkType.rightFootIndex,
+    PoseLandmarkType.rightAnkle,
+    PoseLandmarkType.leftAnkle,
+    PoseLandmarkType.leftKnee,
+    PoseLandmarkType.rightKnee,
+    PoseLandmarkType.leftHeel,
+    PoseLandmarkType.rightHeel,
+  ];
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
@@ -29,6 +38,9 @@ class PosePainter extends CustomPainter {
 
     for (final pose in poses) {
       pose.landmarks.forEach((_, landmark) {
+        if (pointLandmarksFilters.contains(landmark.type)) {
+          return;
+        }
         final tx = translateX(landmark.x, rotation, size, absoluteImageSize);
         final ty = translateY(landmark.y, rotation, size, absoluteImageSize);
         canvas.drawCircle(
@@ -69,14 +81,14 @@ class PosePainter extends CustomPainter {
       paintLine(PoseLandmarkType.rightShoulder, PoseLandmarkType.rightHip,
           rightPaint);
 
-      //Draw legs
-      paintLine(PoseLandmarkType.leftHip, PoseLandmarkType.leftKnee, leftPaint);
-      paintLine(
-          PoseLandmarkType.leftKnee, PoseLandmarkType.leftAnkle, leftPaint);
-      paintLine(
-          PoseLandmarkType.rightHip, PoseLandmarkType.rightKnee, rightPaint);
-      paintLine(
-          PoseLandmarkType.rightKnee, PoseLandmarkType.rightAnkle, rightPaint);
+      // //Draw legs
+      // paintLine(PoseLandmarkType.leftHip, PoseLandmarkType.leftKnee, leftPaint);
+      // paintLine(
+      //     PoseLandmarkType.leftKnee, PoseLandmarkType.leftAnkle, leftPaint);
+      // paintLine(
+      //     PoseLandmarkType.rightHip, PoseLandmarkType.rightKnee, rightPaint);
+      // paintLine(
+      //     PoseLandmarkType.rightKnee, PoseLandmarkType.rightAnkle, rightPaint);
     }
   }
 

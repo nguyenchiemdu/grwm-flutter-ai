@@ -46,7 +46,7 @@ class _ImageDetectionState extends State<ImageDetection> {
                           ),
                         );
                       }
-                      return const Text("Loading");
+                      return Image.asset("assets/images/guide.png");
                     }),
                 StreamBuilder<CustomPainter>(
                     stream: bloC.poseDetectionStream,
@@ -63,7 +63,7 @@ class _ImageDetectionState extends State<ImageDetection> {
                           ),
                         );
                       }
-                      return const Text("Loading");
+                      return const SizedBox();
                     }),
                 StreamBuilder<CustomPainter>(
                     stream: bloC.sectionDetectionStream,
@@ -78,7 +78,7 @@ class _ImageDetectionState extends State<ImageDetection> {
                           ),
                         );
                       }
-                      return const Text("Loading");
+                      return const SizedBox();
                     }),
               ],
             );

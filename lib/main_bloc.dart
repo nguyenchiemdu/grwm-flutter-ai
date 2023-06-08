@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
+import 'package:grwm_flutter_ai/commons/app_strings.dart';
 import 'package:grwm_flutter_ai/models/section.dart';
 import 'package:grwm_flutter_ai/painters/pose_painter.dart';
 import 'package:grwm_flutter_ai/painters/section_painter.dart';
@@ -15,7 +16,7 @@ import 'package:image_size_getter/file_input.dart';
 import 'package:image_size_getter/image_size_getter.dart' hide Size;
 import 'package:rxdart/subjects.dart';
 
-import 'commons/app_const.dart';
+import 'commons/model_const.dart';
 
 class MainBloC {
   final ImageSegmentation _imageSegmentation = ImageSegmentation();
@@ -30,6 +31,8 @@ class MainBloC {
       BehaviorSubject<double>();
   final BehaviorSubject<bool> _devModeStreamController =
       BehaviorSubject<bool>();
+  final StreamController<String> _errorStreamController =
+      StreamController<String>();
   Stream<CustomPainter> get imageSegmentStream =>
       _imageSegmentPaintStreamController.stream;
   Stream<CustomPainter> get poseDetectionStream =>
@@ -38,18 +41,26 @@ class MainBloC {
       _sectionDetectionPaintStreamController.stream;
   Stream<double> get confidenceStream => _confidenceStreamController.stream;
   Stream<bool> get devModeStream => _devModeStreamController.stream;
+  Stream<String> get errorStream => _errorStreamController.stream;
   SegmentationMask? mask;
   late List<Pose> poses;
   late File pickedImage;
   late SectionDetection _sectionDetection;
   MainBloC() {
-    _confidenceStreamController.add(AppConst.confidenceParameter);
+    _confidenceStreamController.add(ModelConst.confidenceParameter);
     _devModeStreamController.add(false);
   }
   Future detectBody() async {
-    await segmentImage();
-    await poseDetection();
-    await sectionDetection();
+    _errorStreamController.add("");
+    try {
+      await segmentImage();
+      await poseDetection();
+      await sectionDetection();
+    } catch (e, s) {
+      debugPrint(e.toString());
+      debugPrintStack(stackTrace: s);
+      _errorStreamController.add(e.toString());
+    }
   }
 
   Future segmentImage() async {
@@ -92,6 +103,10 @@ class MainBloC {
 
     poses = await _poseDetection.imagePoseDetection(pickedImage);
     final size = ImageSizeGetter.getSize(FileInput(pickedImage));
+    // if poses emtpy that means model can not detect the pose
+    if (poses.isEmpty) {
+      throw AppStrings.cannotDetectThePoses;
+    }
     final painter = PosePainter(
         poses,
         Size(size.width.toDouble(), size.height.toDouble()),
@@ -149,28 +164,30 @@ class MainBloC {
     if (a2 > a1 && a2 > a3) {
       debugPrint("Diamond");
     }
-    if (AppConst.rectangleBottomRatio < a1 / a2 &&
-        a1 / a2 <= AppConst.rectangleTopRatio &&
-        AppConst.rectangleBottomRatio < a2 / a3 &&
-        a2 / a3 <= AppConst.rectangleTopRatio &&
-        AppConst.rectangleBottomRatio < a1 / a3 &&
-        a1 / a3 <= AppConst.rectangleTopRatio) {
+    if (ModelConst.rectangleBottomRatio < a1 / a2 &&
+        a1 / a2 <= ModelConst.rectangleTopRatio &&
+        ModelConst.rectangleBottomRatio < a2 / a3 &&
+        a2 / a3 <= ModelConst.rectangleTopRatio &&
+        ModelConst.rectangleBottomRatio < a1 / a3 &&
+        a1 / a3 <= ModelConst.rectangleTopRatio) {
       debugPrint("Rectangle");
     }
-    if (AppConst.hourglassA1A3Bot < a1 / a3 &&
-        a1 / a3 <= AppConst.hourglassA1A3Top &&
-        a2 / a3 <= AppConst.hourglassA2A3Top) {
+    if (ModelConst.hourglassA1A3Bot < a1 / a3 &&
+        a1 / a3 <= ModelConst.hourglassA1A3Top &&
+        a2 / a3 <= ModelConst.hourglassA2A3Top) {
       debugPrint("Hourglass");
     }
-    if (a3 / a1 > AppConst.triangleRatio && a2 / a3 < AppConst.triangleRatio) {
+    if (a3 / a1 > ModelConst.triangleRatio &&
+        a2 / a3 < ModelConst.triangleRatio) {
       if (a1 / a2 > 1) {
         debugPrint("Triangle A");
       } else {
         debugPrint("Triangle B");
       }
     }
-    if (a1 / a3 > AppConst.triangleRatio && a2 / a1 < AppConst.triangleRatio) {
-      if (a2 / a3 < AppConst.triangleRatio) {
+    if (a1 / a3 > ModelConst.triangleRatio &&
+        a2 / a1 < ModelConst.triangleRatio) {
+      if (a2 / a3 < ModelConst.triangleRatio) {
         debugPrint("Inverted triangle X");
       } else {
         debugPrint("Inverted triangle Y");
@@ -184,5 +201,6 @@ class MainBloC {
     _confidenceStreamController.close();
     _sectionDetectionPaintStreamController.close();
     _devModeStreamController.close();
+    _errorStreamController.close();
   }
 }

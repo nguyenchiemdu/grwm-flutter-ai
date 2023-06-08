@@ -1,6 +1,7 @@
 import 'dart:math' hide Point;
 
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
+import 'package:grwm_flutter_ai/commons/app_strings.dart';
 import 'package:grwm_flutter_ai/models/point.dart';
 import 'package:grwm_flutter_ai/models/section.dart';
 import 'package:matrix2d/matrix2d.dart';
@@ -138,7 +139,7 @@ class AlgebraHelper {
     }
     if (image[left.y][left.x] < confidence ||
         image[right.y][right.x] < confidence) {
-      throw "point is out of bounds";
+      throw AppStrings.pointOutOfBound;
     }
     return Section(left, right);
   }
@@ -166,7 +167,7 @@ class AlgebraHelper {
     var left = point;
     if (image[left.y][left.x] < confidence ||
         image[right.y][right.x] < confidence) {
-      throw "point is out of bounds";
+      throw AppStrings.pointOutOfBound;
     }
     return Section(left, right, mid: p);
   }

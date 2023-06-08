@@ -1,12 +1,16 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:grwm_flutter_ai/commons/app_const.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:grwm_flutter_ai/commons/app_assets.dart';
+import 'package:grwm_flutter_ai/commons/app_colors.dart';
+import 'package:grwm_flutter_ai/commons/app_strings.dart';
+import 'package:grwm_flutter_ai/commons/model_const.dart';
 import 'package:grwm_flutter_ai/main_bloc.dart';
-import 'package:grwm_flutter_ai/widgets/materialColor.dart';
+import 'package:grwm_flutter_ai/widgets/material_color.dart';
 // import 'package:grwm_flutter_ai/widgets/change_confidence.dart';
 import 'package:grwm_flutter_ai/widgets/image_detection.dart';
-import 'package:grwm_flutter_ai/widgets/switch.dart';
+import 'package:grwm_flutter_ai/widgets/switch_mode_button.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 // import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
@@ -51,46 +55,46 @@ class _MyHomePageState extends State<MyHomePage> {
   void onPickImage() async {
     final xFile = await _picker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: AppConst.maxWidth,
-        maxHeight: AppConst.maxHeight);
+        maxWidth: ModelConst.maxWidth,
+        maxHeight: ModelConst.maxHeight);
     final File file = File(xFile!.path);
     setState(() {});
     bloC.pickedImage = file;
     try {
       await bloC.detectBody();
     } catch (e, s) {
-      debugPrint(e.toString());
-      debugPrintStack(stackTrace: s);
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Error'),
-            content: Text('$e'),
-            actions: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(
-                  textStyle: Theme.of(context).textTheme.labelLarge,
-                ),
-                child: const Text('Ok'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              TextButton(
-                style: TextButton.styleFrom(
-                  textStyle: Theme.of(context).textTheme.labelLarge,
-                ),
-                child: const Text('Close'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+      // debugPrint(e.toString());
+      // debugPrintStack(stackTrace: s);
+      // if (!mounted) return;
+      // showDialog(
+      //   context: context,
+      //   builder: (BuildContext context) {
+      //     return AlertDialog(
+      //       title: const Text('Error'),
+      //       content: Text('$e'),
+      //       actions: <Widget>[
+      //         TextButton(
+      //           style: TextButton.styleFrom(
+      //             textStyle: Theme.of(context).textTheme.labelLarge,
+      //           ),
+      //           child: const Text('Ok'),
+      //           onPressed: () {
+      //             Navigator.of(context).pop();
+      //           },
+      //         ),
+      //         TextButton(
+      //           style: TextButton.styleFrom(
+      //             textStyle: Theme.of(context).textTheme.labelLarge,
+      //           ),
+      //           child: const Text('Close'),
+      //           onPressed: () {
+      //             Navigator.of(context).pop();
+      //           },
+      //         ),
+      //       ],
+      //     );
+      //   },
+      // );
     }
   }
 
@@ -106,6 +110,20 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Center(
                 child: Column(
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      child: StreamBuilder<bool>(
+                          stream: bloC.devModeStream,
+                          builder: (context, snapshot) {
+                            bool isDevMode = snapshot.data ?? false;
+                            return Text(
+                              isDevMode
+                                  ? AppStrings.devMode
+                                  : AppStrings.demoMode,
+                              style: const TextStyle(color: AppColors.white),
+                            );
+                          }),
+                    ),
                     Expanded(
                       child: ImageDetection(
                         screenshotController: _screenshotController,
@@ -114,42 +132,55 @@ class _MyHomePageState extends State<MyHomePage> {
                     // const ChangeConfidenceWidget(),
                     // const RangeSliderWidget(),
                     SizedBox(
-                      height: 80,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            SwitchScreen(
-                              // child: StreamBuilder<bool>(
-                              //     stream: bloC.devModeStream,
-                              //     builder: (context, snapshot) {
-                              //       return Text(snapshot.data ?? false
-                              //           ? 'Dev mode'
-                              //           : 'Demo mode');
-                              //     }),
-                              // onPressed: () {
-                              //   // _screenshotController.capture().then((data) async {
-                              //   //   await ImageGallerySaver.saveImage(data!,
-                              //   //       quality: 60, name: "hello");
-                              //   // });
-                              //   bloC.changeDevMode();
-                              // },
+                      height: 100,
+                      child: StreamBuilder<String>(
+                        stream: bloC.errorStream,
+                        builder: (context, snapshot) {
+                          String errorMessage = snapshot.data ?? "";
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8.0, horizontal: 34),
+                            child: Text(
+                              errorMessage,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: AppColors.red),
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.camera_alt_outlined),
-                              color: Colors.white,
-                              onPressed: () {
-                                _screenshotController
-                                    .capture()
-                                    .then((data) async {
-                                  await ImageGallerySaver.saveImage(data!,
-                                      quality: 60, name: "hello");
-                                });
-                              },
-                            ),
-                          ],
-                        ),
+                          );
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 40),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const SwitchModeButton(),
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: SvgPicture.asset(
+                                  AppAssets.iconCapture,
+                                  width: 24,
+                                  height: 24,
+                                ),
+                                color: Colors.white,
+                                onPressed: () {
+                                  _screenshotController
+                                      .capture()
+                                      .then((data) async {
+                                    await ImageGallerySaver.saveImage(data!,
+                                        quality: 60, name: "hello");
+                                  });
+                                },
+                              ),
+                              const Text(
+                                AppStrings.capture,
+                                style: TextStyle(color: Colors.white),
+                              )
+                            ],
+                          ),
+                        ],
                       ),
                     )
                   ],
@@ -158,9 +189,11 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: onPickImage,
-              tooltip: 'Increment',
+              tooltip: 'Chooose the image',
               child: const Icon(Icons.add),
-            ), floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+            ),
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerFloat,
           );
         });
   }
