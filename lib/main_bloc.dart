@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:developer';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
 import 'package:grwm_flutter_ai/commons/app_strings.dart';
 import 'package:grwm_flutter_ai/models/body_recog_state.dart';
+import 'package:grwm_flutter_ai/models/log_params.dart';
 import 'package:grwm_flutter_ai/models/section.dart';
 import 'package:grwm_flutter_ai/painters/pose_painter.dart';
 import 'package:grwm_flutter_ai/painters/section_painter.dart';
@@ -15,6 +17,7 @@ import 'package:grwm_flutter_ai/painters/segmentation_painter.dart';
 import 'package:grwm_flutter_ai/services/sections_detection.dart';
 import 'package:image_size_getter/file_input.dart';
 import 'package:image_size_getter/image_size_getter.dart' hide Size;
+import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/subjects.dart';
 
 import 'commons/model_const.dart';
@@ -39,11 +42,20 @@ class MainBloC {
   late List<Pose> poses;
   late File pickedImage;
   late SectionDetection _sectionDetectionService;
+
+  CustomPainter? imageSegmentValue;
+  CustomPainter? poseDetectionValue;
+  CustomPainter? sectionDetectionValue;
+  Section? sectionShoulder;
+  Section? sectionHip;
+  List<Section> sectionWaist = [];
+  List<Map> listJsons = [];
   MainBloC() {
     _confidenceStreamController.add(ModelConst.confidenceParameter);
     _devModeStreamController.add(false);
   }
-  Future detectBody() async {
+  Future detectBody(File file) async {
+    pickedImage = file;
     _bodyRecogStreamController.add(BodyRecogState(isLoading: true));
     _errorStreamController.add("");
     BodyRecogState bodyRecogState = BodyRecogState();
@@ -120,10 +132,10 @@ class MainBloC {
           poses: poses,
           confidence: _confidenceStreamController.value,
           isRotated: size.needRotate);
-      var sectionShoulder = _sectionDetectionService.shoulderDetection();
-      var sectionHip = _sectionDetectionService.hipDetection();
-      var sectionWaist = _sectionDetectionService.waistDetection();
-      _bodyShapeDetection(sectionShoulder, sectionWaist.first, sectionHip);
+      sectionShoulder = _sectionDetectionService.shoulderDetection();
+      sectionHip = _sectionDetectionService.hipDetection();
+      sectionWaist = _sectionDetectionService.waistDetection();
+      _bodyShapeDetection(sectionShoulder!, sectionWaist.first, sectionHip!);
       var listWaitsPoints = [];
       for (var section in sectionWaist) {
         listWaitsPoints.add(section.start);
@@ -131,25 +143,30 @@ class MainBloC {
       }
       final SectionPainter sectionPainter = SectionPainter(
           [
-            sectionShoulder.start,
-            sectionShoulder.end,
-            sectionHip.start,
-            sectionHip.end,
+            sectionShoulder!.start,
+            sectionShoulder!.end,
+            sectionHip!.start,
+            sectionHip!.end,
             ...listWaitsPoints
           ],
           Size(size.width.toDouble(), size.height.toDouble()),
           size.needRotate
               ? InputImageRotation.rotation90deg
               : InputImageRotation.rotation0deg);
+      sectionDetectionValue = sectionPainter;
+
+      _logJson();
       return sectionPainter;
     } catch (e) {
-      // final SectionPainter sectionPainter = SectionPainter(
-      //     [],
-      //     Size(size.width.toDouble(), size.height.toDouble()),
-      //     size.needRotate
-      //         ? InputImageRotation.rotation90deg
-      //         : InputImageRotation.rotation0deg);
-      // _sectionDetectionPaintStreamController.add(sectionPainter);
+      final SectionPainter sectionPainter = SectionPainter(
+          [],
+          Size(size.width.toDouble(), size.height.toDouble()),
+          size.needRotate
+              ? InputImageRotation.rotation90deg
+              : InputImageRotation.rotation0deg);
+      sectionDetectionValue = sectionPainter;
+      _devModeStreamController.add(true);
+      _logJson();
       rethrow;
     }
   }
@@ -187,6 +204,35 @@ class MainBloC {
         debugPrint("Inverted triangle Y");
       }
     }
+  }
+
+  void _logJson() {
+    final logParams = LogParams(
+        confidenceParameter: ModelConst.confidenceParameter,
+        midsectionDeltaRatio: ModelConst.midsectionDeltaRatio,
+        midsectionExpandPercent: ModelConst.midsectionExpandPercent,
+        midsectionExpandRatio: ModelConst.midsectionExpandRatio,
+        midsectionMinNoOfLines: ModelConst.midsectionMinNoOfLines,
+        a1: sectionShoulder!,
+        a2: sectionWaist.isNotEmpty ? sectionWaist.first : null,
+        a3: sectionHip!,
+        imagePath: pickedImage.path);
+    listJsons.add(logParams.toMap());
+  }
+
+  void writeJsonToFile(String filenName) async {
+    // final directory = Directory.current;
+    final Directory directory = await getApplicationDocumentsDirectory();
+    final filePath = "${directory.path}/$filenName";
+    final file = File(filePath);
+    final jsonString = jsonEncode(listJsons);
+
+    file.writeAsString(jsonString).then((value) {
+      debugPrint('JSON data written to file: $filePath');
+    }).catchError((error) {
+      debugPrint('Error writing JSON data to file: $error');
+    });
+    listJsons = [];
   }
 
   void dispose() {

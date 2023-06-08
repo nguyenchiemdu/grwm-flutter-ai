@@ -43,4 +43,8 @@ class Section {
   double operator /(Section other) {
     return length / other.length;
   }
+
+  Map toMap() {
+    return {"start": start.toMap(), "end": end.toMap(), "length": length};
+  }
 }

@@ -5,4 +5,11 @@ class Point {
   String toString() {
     return "{$x, $y}";
   }
+
+  Map toMap() {
+    return {
+      "x": x,
+      "y": y,
+    };
+  }
 }
