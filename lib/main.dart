@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:grwm_flutter_ai/commons/app_const.dart';
 import 'package:grwm_flutter_ai/main_bloc.dart';
+import 'package:grwm_flutter_ai/widgets/materialColor.dart';
 // import 'package:grwm_flutter_ai/widgets/change_confidence.dart';
 import 'package:grwm_flutter_ai/widgets/image_detection.dart';
+import 'package:grwm_flutter_ai/widgets/switch.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 // import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
@@ -25,7 +27,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Colors.grey[900],
+        primarySwatch: white,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -117,24 +120,25 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            ElevatedButton(
-                              child: StreamBuilder<bool>(
-                                  stream: bloC.devModeStream,
-                                  builder: (context, snapshot) {
-                                    return Text(snapshot.data ?? false
-                                        ? 'Dev mode'
-                                        : 'Demo mode');
-                                  }),
-                              onPressed: () {
-                                // _screenshotController.capture().then((data) async {
-                                //   await ImageGallerySaver.saveImage(data!,
-                                //       quality: 60, name: "hello");
-                                // });
-                                bloC.changeDevMode();
-                              },
+                            SwitchScreen(
+                              // child: StreamBuilder<bool>(
+                              //     stream: bloC.devModeStream,
+                              //     builder: (context, snapshot) {
+                              //       return Text(snapshot.data ?? false
+                              //           ? 'Dev mode'
+                              //           : 'Demo mode');
+                              //     }),
+                              // onPressed: () {
+                              //   // _screenshotController.capture().then((data) async {
+                              //   //   await ImageGallerySaver.saveImage(data!,
+                              //   //       quality: 60, name: "hello");
+                              //   // });
+                              //   bloC.changeDevMode();
+                              // },
                             ),
-                            ElevatedButton(
-                              child: const Text('Capture'),
+                            IconButton(
+                              icon: const Icon(Icons.camera_alt_outlined),
+                              color: Colors.white,
                               onPressed: () {
                                 _screenshotController
                                     .capture()
@@ -156,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: onPickImage,
               tooltip: 'Increment',
               child: const Icon(Icons.add),
-            ),
+            ), floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
           );
         });
   }
